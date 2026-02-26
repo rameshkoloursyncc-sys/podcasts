@@ -1,8 +1,32 @@
 import React, { useState, useEffect } from "react";
 
 const NavBar = () => {
+    const [isDark, setIsDark] = useState(false);
+    useEffect(() => {
+        const section = document.querySelectorAll(".dark, .light");
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        if (entry.target.classList.contains("dark")) {
+                            setIsDark(true);
+                        } else {
+                            setIsDark(false);
+                        }
+                    }
+                });
+            },
+            {
+                rootMargin: "-50% 0px -49% 0px",
+                threshold: 0
+            }
+        );
+        section.forEach((section) => observer.observe(section));
+        return () => observer.disconnect();
+    }, []);
     return (
-        <div className="sticky top-0 z-[100] ">
+        <div className={`sticky top-0 z-[100] ${isDark ? "text-gray-400" : "text-gray-400"
+            }`}>
             <div className="mx-auto px-10 py-4 flex justify-between items-center">
 
                 {/* Logo */}
@@ -42,8 +66,8 @@ const NavBar = () => {
 
                     {/* Hamburger Button */}
                     <button className="flex flex-col justify-center gap-1 w-6 h-6">
-                        <span className="block h-[2px] w-full bg-black"></span>
-                        <span className="block h-[2px] w-full bg-black"></span>
+                        <span className="block h-[2px] w-full bg-gray-400"></span>
+                        <span className="block h-[2px] w-full bg-gray-400"></span>
                     </button>
 
                 </div>

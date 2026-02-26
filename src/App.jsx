@@ -1,6 +1,4 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
 import NavBar from './components/layout/Navbar'
 import HeroSection from './components/section/HeroSection'
@@ -13,8 +11,6 @@ import FooterSection from './components/section/FooterSection'
 import FloatingBottomNav from './components/layout/BottomNavbar'
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
     <div className="bg-white">
       <NavBar />
@@ -22,12 +18,10 @@ function App() {
       <FeatersSection />
       <PrivacySection />
       <ComposeSection/>
-      <ThinkSection/>
-      <TestimonialSection/>
-      <FooterSection/>
+      <ThinkSection />
+      <TestimonialSection  />
+      <FooterSection />
       <FloatingBottomNav/>
-
-
     </div>
   )
 }

@@ -6,7 +6,7 @@ import Store from "../../../public/stores.svg";
 function ThinkSection() {
   return (
     <div
-      className="px-6 h-[80vh] flex flex-col items-center justify-center text-center"
+      className="light px-6 h-screen flex flex-col items-center justify-center text-center"
       style={{
         background:
           "linear-gradient(147.05deg, rgba(241, 255, 201, 0) 64.83%, #F1FFC9 77.53%, #C5F3E5 90.17%)",

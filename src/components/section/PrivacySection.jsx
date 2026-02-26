@@ -5,7 +5,7 @@ import ImageTwo from "../../../public/keys.svg";
 function PrivacySection() {
   return (
     <div
-      className="px-4"
+      className="light px-4 h-[100%]"
       style={{
         background:
           "linear-gradient(147.05deg, rgba(255, 237, 190, 0) 64.83%, #FFEDBE 77.53%, #FFBCC3 90.17%)",

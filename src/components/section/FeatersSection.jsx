@@ -4,7 +4,7 @@ import Documents from '../../../public/documents.png'
 import Database from '../../../public/private-databases.svg'
 function FeatersSection() {
     return (
-        <div className="bg-black px-4 py-2 text-white">
+        <div  className="dark bg-black px-4 py-2 text-white h-screen">
             <h1 className='text-6xl text-white text-center m-auto p-15'>discuss, organize, remember</h1>
             <div className="mx-auto flex flex-col justify-center items-center border border-white/20  mb-20 mt-10">
 

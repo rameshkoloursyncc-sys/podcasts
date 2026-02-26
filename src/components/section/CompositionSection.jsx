@@ -16,7 +16,7 @@ function ComposeSection() {
 
   return (
     <div
-      className="px-4 py-20 bg-black text-white"
+      className="dark px-4 py-20 bg-black text-white h-screen"
      
     >
       <div className="mx-auto border border-white/20">
