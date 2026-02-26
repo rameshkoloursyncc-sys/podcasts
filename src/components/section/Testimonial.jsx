@@ -3,7 +3,7 @@ import Profile from "../../../public/profile.png";
 
 function TestimonialSection() {
   return (
-    <div className="dark px-4 py-20 bg-black text-white h-screen">
+    <div className="dark px-4 py-20 bg-black text-white">
       <div className="mx-auto border border-white/20">
 
         {/* GRID */}

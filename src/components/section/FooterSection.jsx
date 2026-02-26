@@ -3,7 +3,7 @@ import FooterImage from "../../../public/footer.svg";
 import Icons from "../../../public/insta2.png";
 function FooterSection() {
   return (
-    <div className="dark bg-black text-white px-4 h-screen ">
+    <div className="dark bg-black text-white px-4 ">
 
       {/* TOP SECTION */}
       <div className="border border-white/20 text-center ">
