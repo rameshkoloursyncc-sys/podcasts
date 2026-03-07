@@ -1,0 +1,11 @@
+[
+  {
+    "id": "note-1",
+    "tenantId": "tenant-1",
+    "entityType": "guest",
+    "entityId": "guest-1",
+    "authorId": "user-1",
+    "body": "Great fit for our audience.",
+    "createdAt": "2025-01-15T10:00:00Z"
+  }
+]

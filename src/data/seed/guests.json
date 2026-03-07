@@ -1,0 +1,13 @@
+[
+  {
+    "id": "guest-1",
+    "tenantId": "tenant-1",
+    "stageId": "stage-prospect",
+    "name": "Jane Doe",
+    "email": "jane@example.com",
+    "bio": "Author and speaker.",
+    "avatarUrl": null,
+    "createdAt": "2025-01-15T10:00:00Z",
+    "updatedAt": "2025-01-15T10:00:00Z"
+  }
+]

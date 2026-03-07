@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
+import HamburgerMenu from "./HamburgerMenu";
 
 const NavBar = () => {
     const [isDark, setIsDark] = useState(false);
+    const [menuOpen, setMenuOpen] = useState(false);
     useEffect(() => {
         const section = document.querySelectorAll(".dark, .light");
         const observer = new IntersectionObserver(
@@ -65,13 +67,20 @@ const NavBar = () => {
                     </button>
 
                     {/* Hamburger Button */}
-                    <button className="flex flex-col justify-center gap-1 w-6 h-6">
-                        <span className="block h-[2px] w-full bg-gray-400"></span>
-                        <span className="block h-[2px] w-full bg-gray-400"></span>
+                    <button
+                        onClick={() => setMenuOpen(true)}
+                        className="flex flex-col justify-center gap-1.5 w-6 h-6 hover:opacity-80 transition"
+                        aria-label="Open menu"
+                    >
+                        <span className="block h-[2px] w-full bg-gray-400 rounded-full"></span>
+                        <span className="block h-[2px] w-full bg-gray-400 rounded-full"></span>
+                        <span className="block h-[2px] w-full bg-gray-400 rounded-full"></span>
                     </button>
 
                 </div>
             </div>
+
+            <HamburgerMenu isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
         </div>
     );
 };

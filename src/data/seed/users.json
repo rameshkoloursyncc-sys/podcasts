@@ -1,0 +1,10 @@
+[
+  {
+    "id": "user-1",
+    "tenantId": "tenant-1",
+    "email": "host@demo.com",
+    "displayName": "Demo Host",
+    "role": "host",
+    "createdAt": "2025-01-01T00:00:00Z"
+  }
+]

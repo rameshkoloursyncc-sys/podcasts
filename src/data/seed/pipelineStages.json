@@ -1,0 +1,8 @@
+[
+  { "id": "stage-prospect", "tenantId": "tenant-1", "key": "prospect", "label": "Prospect", "order": 1 },
+  { "id": "stage-invited", "tenantId": "tenant-1", "key": "invited", "label": "Invited", "order": 2 },
+  { "id": "stage-confirmed", "tenantId": "tenant-1", "key": "confirmed", "label": "Confirmed", "order": 3 },
+  { "id": "stage-recorded", "tenantId": "tenant-1", "key": "recorded", "label": "Recorded", "order": 4 },
+  { "id": "stage-published", "tenantId": "tenant-1", "key": "published", "label": "Published", "order": 5 },
+  { "id": "stage-followup", "tenantId": "tenant-1", "key": "followup", "label": "Follow-up", "order": 6 }
+]
