@@ -1,14 +1,25 @@
 import { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
+import { Sparkles, Sun, Moon, ArrowRight, Radio, Users, Mic2, CalendarDays } from 'lucide-react';
+
+const FEATURE_GRID = [
+  { icon: Users,       label: 'Guest CRM',     desc: 'Manage podcast guests with pipeline stages and outreach tracking.' },
+  { icon: Mic2,        label: 'Episodes',       desc: 'Track recording status from draft to published in one place.' },
+  { icon: CalendarDays,label: 'Bookings',       desc: 'Schedule recording sessions and manage your calendar with ease.' },
+  { icon: Radio,       label: 'Publish Ready',  desc: 'Move from guest outreach to published episode — all in one workflow.' },
+];
+
 export default function Login() {
-  const [userId, setUserId] = useState('user-1');
+  const [userId, setUserId]   = useState('user-1');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const { login } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const from = location.state?.from?.pathname ?? '/app';
+  const [error, setError]     = useState('');
+  const { login }             = useAuth();
+  const { isDark, toggle }    = useTheme();
+  const navigate              = useNavigate();
+  const location              = useLocation();
+  const from                  = location.state?.from?.pathname ?? '/app';
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -17,40 +28,130 @@ export default function Login() {
     try {
       const ok = await login(userId);
       if (ok) navigate(from, { replace: true });
-      else setError('User not found.');
+      else setError('User not found. Try user-1');
     } catch (_) {
-      setError('Login failed.');
+      setError('Login failed. Please try again.');
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50">
-      <div className="w-full max-w-sm rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-        <h1 className="text-lg font-semibold text-slate-900">Sign in</h1>
-        <p className="mt-1 text-sm text-slate-500">Mock auth — pick a user to continue.</p>
-        <form onSubmit={handleSubmit} className="mt-4 space-y-3">
-          <label className="block text-sm font-medium text-slate-700">User ID</label>
-          <input
-            type="text"
-            value={userId}
-            onChange={(e) => setUserId(e.target.value)}
-            className="w-full rounded border border-slate-300 px-3 py-2 text-slate-900 focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
-            placeholder="user-1"
-          />
-          {error && <p className="text-sm text-red-600">{error}</p>}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded bg-slate-900 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
-          >
-            {loading ? 'Signing in…' : 'Sign in'}
+    <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white flex flex-col">
+
+      {/* ── Top bar ─────────────────────────────────────────────── */}
+      <header className="flex items-center justify-between px-6 py-4 border-b border-black dark:border-white/20">
+        <Link to="/" className="flex items-center gap-2.5">
+          <div className="h-7 w-7 rounded-lg bg-black dark:bg-white flex items-center justify-center">
+            <Sparkles size={14} className="text-white dark:text-black" />
+          </div>
+          <span className="text-sm font-bold tracking-tight">PodcastOS</span>
+        </Link>
+        <div className="flex items-center gap-3">
+          <button onClick={toggle}
+            className="flex items-center gap-1.5 rounded-lg border border-black/20 dark:border-white/20 px-3 py-1.5 text-xs font-semibold hover:bg-black/5 dark:hover:bg-white/8 transition-all">
+            {isDark ? <><Sun size={13} className="text-amber-500" /> Light</> : <><Moon size={13} className="text-violet-600" /> Dark</>}
           </button>
-        </form>
-        <p className="mt-3 text-xs text-slate-400">
-          Seed user: <code className="rounded bg-slate-100 px-1">user-1</code>
-        </p>
+          <Link to="/" className="text-xs font-semibold text-black/50 dark:text-white/40 hover:text-black dark:hover:text-white transition-colors">
+            ← Back to home
+          </Link>
+        </div>
+      </header>
+
+      {/* ── Main grid layout ────────────────────────────────────── */}
+      <div className="flex-1 grid lg:grid-cols-2 border-b border-black dark:border-white/20">
+
+        {/* ── Left: Login form ─────────────────────────────────── */}
+        <div className="flex flex-col justify-center px-8 py-16 lg:px-16 border-b lg:border-b-0 lg:border-r border-black dark:border-white/20">
+          <div className="max-w-sm w-full mx-auto lg:mx-0">
+
+            <div className="mb-8">
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-black/40 dark:text-white/30 mb-3">Sign In</p>
+              <h1 className="text-4xl font-bold tracking-tight leading-tight">
+                Welcome<br />back.
+              </h1>
+              <p className="mt-3 text-sm text-black/50 dark:text-white/40 leading-relaxed">
+                Enter your user ID to access your<br />podcast management dashboard.
+              </p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-black/40 dark:text-white/30 mb-2">
+                  User ID
+                </label>
+                <input
+                  type="text"
+                  value={userId}
+                  onChange={e => setUserId(e.target.value)}
+                  placeholder="user-1"
+                  className="w-full border border-black/20 dark:border-white/20 bg-transparent px-4 py-3 text-sm text-black dark:text-white placeholder:text-black/30 dark:placeholder:text-white/25 focus:outline-none focus:border-black dark:focus:border-white transition-colors"
+                />
+              </div>
+
+              {error && (
+                <div className="border border-red-400/40 bg-red-50 dark:bg-red-500/10 px-4 py-3">
+                  <p className="text-xs font-semibold text-red-600 dark:text-red-400">{error}</p>
+                </div>
+              )}
+
+              <button type="submit" disabled={loading}
+                className="w-full flex items-center justify-between border border-black dark:border-white bg-black dark:bg-white text-white dark:text-black px-5 py-3.5 text-sm font-bold hover:bg-black/90 dark:hover:bg-white/90 disabled:opacity-50 transition-all group">
+                <span>{loading ? 'Signing in…' : 'Sign in'}</span>
+                <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
+              </button>
+            </form>
+
+            {/* Hint */}
+            <div className="mt-6 border border-black/10 dark:border-white/10 p-4">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-black/40 dark:text-white/30 mb-2">Demo Access</p>
+              <div className="flex flex-wrap gap-2">
+                {['user-1', 'user-2'].map(id => (
+                  <button key={id} onClick={() => setUserId(id)}
+                    className="rounded-none border border-black/20 dark:border-white/20 px-3 py-1 text-xs font-mono font-semibold text-black/60 dark:text-white/50 hover:border-black dark:hover:border-white hover:text-black dark:hover:text-white transition-all">
+                    {id}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Right: Feature grid ──────────────────────────────── */}
+        <div className="hidden lg:grid grid-cols-2 grid-rows-2 divide-y divide-x divide-black dark:divide-white/20">
+          {FEATURE_GRID.map(({ icon: Icon, label, desc }, i) => (
+            <div key={label}
+              className={`p-10 flex flex-col justify-between relative overflow-hidden
+                ${i === 0 ? 'border-b border-r border-black dark:border-white/20' : ''}
+                ${i === 1 ? 'border-b border-black dark:border-white/20' : ''}
+                ${i === 2 ? 'border-r border-black dark:border-white/20' : ''}
+              `}>
+              {/* Grid number */}
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-black/20 dark:text-white/15 mb-auto">0{i + 1}</span>
+              <div className="mt-auto">
+                <div className="h-10 w-10 border border-black/20 dark:border-white/20 flex items-center justify-center mb-5">
+                  <Icon size={18} className="text-black dark:text-white" />
+                </div>
+                <h3 className="text-xl font-bold tracking-tight mb-2">{label}</h3>
+                <p className="text-sm text-black/50 dark:text-white/40 leading-relaxed">{desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Bottom strip ────────────────────────────────────────── */}
+      <div className="grid grid-cols-3 divide-x divide-black dark:divide-white/20 border-t border-black dark:border-white/20">
+        {[
+          { label: 'Guests', value: 'CRM Pipeline' },
+          { label: 'Episodes', value: 'Status Tracking' },
+          { label: 'Bookings', value: 'Scheduling' },
+        ].map(({ label, value }) => (
+          <div key={label} className="px-6 py-5">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-black/30 dark:text-white/25">{label}</p>
+            <p className="text-sm font-semibold mt-1 text-black/70 dark:text-white/60">{value}</p>
+          </div>
+        ))}
       </div>
     </div>
   );
