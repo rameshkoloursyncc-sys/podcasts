@@ -4,13 +4,16 @@ import { useAuth } from '../../context/AuthContext';
 import { getNotes, createNote, deleteNote } from '../../services/api';
 import { FileText, ArrowLeft, Plus, Trash2, X, Send, Clock3 } from 'lucide-react';
 
-const INPUT  = 'w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400 transition-all dark:border-white/10 dark:bg-white/5 dark:text-white/80 dark:placeholder:text-white/25 dark:focus:ring-emerald-500/30 dark:focus:border-emerald-500/40';
-const LABEL  = 'block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-white/35 mb-1.5';
-const CARD_ACCENTS = ['from-violet-600 to-purple-700','from-blue-600 to-cyan-600','from-pink-500 to-rose-600','from-emerald-500 to-teal-600','from-amber-500 to-orange-600','from-indigo-600 to-violet-700'];
+const DIVIDER = 'border-black/[0.08] dark:border-white/[0.08] divide-black/[0.08] dark:divide-white/[0.08]';
+const INPUT   = 'w-full border border-black/20 dark:border-white/20 bg-transparent px-4 py-3 text-sm text-black dark:text-white placeholder:text-black/30 dark:placeholder:text-white/25 focus:outline-none focus:border-black dark:focus:border-white transition-colors';
+const LABEL   = 'block text-[10px] font-bold uppercase tracking-widest text-black/40 dark:text-white/30 mb-2';
+
+const BTN_PRIMARY = 'flex items-center gap-2 border border-black dark:border-white bg-black dark:bg-white text-white dark:text-black px-5 py-2.5 text-xs font-bold hover:opacity-80 transition-opacity disabled:opacity-50';
+const BTN_GHOST   = `flex items-center gap-2 border ${DIVIDER} px-5 py-2.5 text-xs font-bold text-black/60 dark:text-white/60 hover:border-black dark:hover:border-white hover:text-black dark:hover:text-white transition-all`;
 
 const TYPE_BADGE = {
-  guest:   'bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300',
-  episode: 'bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300',
+  guest:   'bg-black/5 text-black/60 dark:bg-white/10 dark:text-white/60',
+  episode: 'bg-black/5 text-black/60 dark:bg-white/10 dark:text-white/60',
 };
 
 export default function AdminNotes() {
@@ -45,95 +48,96 @@ export default function AdminNotes() {
   }
 
   if (loading) return (
-    <div className="flex items-center justify-center h-80">
-      <div className="h-10 w-10 rounded-full border-4 border-emerald-200 border-t-emerald-600 animate-spin dark:border-emerald-500/30 dark:border-t-emerald-500" />
+    <div className="flex items-center justify-center h-80 bg-white dark:bg-[#0f1117]">
+      <div className="flex flex-col items-center gap-3">
+        <div className="h-9 w-9 border-4 border-black/10 border-t-black animate-spin dark:border-white/10 dark:border-t-white" />
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-black/25 dark:text-white/20">Loading…</p>
+      </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#0f1117] p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <Link to="/admin" className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 dark:text-white/35 dark:hover:text-white/60 mb-2 transition-colors">
-            <ArrowLeft size={12} /> Admin
-          </Link>
-          <div className="flex items-center gap-2 mb-1">
-            <FileText size={14} className="text-emerald-500 dark:text-emerald-400" />
-            <span className="text-xs font-semibold uppercase tracking-widest text-emerald-500 dark:text-emerald-400">CRUD</span>
+    <div className="min-h-screen bg-white dark:bg-[#0f1117] text-black dark:text-white">
+      <div className={`border-x ${DIVIDER}`}>
+        {/* Header Billboard */}
+        <div className={`px-6 py-6 flex items-center justify-between gap-6 border-y ${DIVIDER} bg-white dark:bg-[#0a0c12]`}>
+          <div>
+            <Link to="/admin" className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-black/40 dark:text-white/30 hover:text-black dark:hover:text-white mb-3 transition-colors">
+              <ArrowLeft size={10} /> Admin Dashboard
+            </Link>
+            <h1 className="text-3xl font-extrabold tracking-tight leading-none flex items-center gap-3">
+              <FileText size={24} className="text-black/20 dark:text-white/20" /> Notes
+            </h1>
+            <p className="text-sm text-black/40 dark:text-white/30 mt-2">{notes.length} notes</p>
           </div>
-          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Notes</h1>
-          <p className="text-sm text-slate-400 dark:text-white/35 mt-0.5">{notes.length} notes</p>
+          <button onClick={() => setShowForm(v => !v)} className={BTN_PRIMARY}>
+            {showForm ? <X size={14} /> : <Plus size={14} />} {showForm ? 'Cancel' : 'Add Note'}
+          </button>
         </div>
-        <button onClick={() => setShowForm(v => !v)}
-          className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all hover:-translate-y-0.5">
-          {showForm ? <X size={14} /> : <Plus size={14} />}
-          {showForm ? 'Cancel' : 'Add Note'}
-        </button>
+
+        {/* Content Body */}
+        <div className={`border-b ${DIVIDER} flex flex-col`}>
+          
+          {/* Form */}
+          {showForm && (
+            <div className={`border-b ${DIVIDER} p-8 bg-black/[0.02] dark:bg-white/[0.02]`}>
+              <h2 className="text-sm font-bold tracking-tight uppercase mb-6">Add New Note</h2>
+              <form onSubmit={handleAdd} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className={LABEL}>Entity Type</label>
+                  <select value={form.entityType} onChange={e => setForm(f => ({ ...f, entityType: e.target.value }))} className={INPUT}>
+                    <option value="guest" className="bg-white dark:bg-black">Guest</option>
+                    <option value="episode" className="bg-white dark:bg-black">Episode</option>
+                  </select>
+                </div>
+                <div>
+                  <label className={LABEL}>Entity ID</label>
+                  <input type="text" placeholder="e.g. guest-123" value={form.entityId} onChange={e => setForm(f => ({ ...f, entityId: e.target.value }))} className={INPUT} />
+                </div>
+                <div className="md:col-span-2">
+                  <label className={LABEL}>Note Body *</label>
+                  <textarea placeholder="Write your note here…" value={form.body} onChange={e => setForm(f => ({ ...f, body: e.target.value }))} className={INPUT} rows={4} required />
+                </div>
+                <div className="md:col-span-2 flex items-center justify-end gap-3 pt-4 border-t border-black/10 dark:border-white/10 mt-2">
+                  <button type="button" onClick={() => setShowForm(false)} className={BTN_GHOST}>Cancel</button>
+                  <button type="submit" disabled={saving} className={BTN_PRIMARY}><Send size={14} /> Save Note</button>
+                </div>
+              </form>
+            </div>
+          )}
+
+          {/* Notes list */}
+          <div>
+            {notes.length === 0 ? (
+              <div className="py-20 flex flex-col items-center text-black/20 dark:text-white/15 select-none">
+                <FileText size={36} className="mb-3" />
+                <p className="text-xs font-bold uppercase tracking-widest">No notes yet</p>
+              </div>
+            ) : (
+              <div className={`grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 divide-x divide-y md:divide-y-0 ${DIVIDER}`}>
+                {notes.map((n, i) => (
+                  <div key={n.id} className={`p-6 relative overflow-hidden bg-white dark:bg-[#0f1117] hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors border-b md:border-b-0 ${DIVIDER}`}>
+                    <div className="flex items-start justify-between mb-4">
+                      <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${TYPE_BADGE[n.entityType] ?? 'bg-black/5 text-black/60 dark:bg-white/10 dark:text-white/60'}`}>
+                        {n.entityType}
+                      </span>
+                      <button onClick={() => handleDelete(n.id)} className="text-black/30 hover:text-red-500 dark:text-white/20 dark:hover:text-red-400 transition-colors">
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                    <p className="text-sm font-medium text-black/80 dark:text-white/80 leading-relaxed min-h-[40px]">{n.body}</p>
+                    {n.entityId && <p className="mt-4 text-[10px] font-mono text-black/40 dark:text-white/30 truncate">{n.entityId}</p>}
+                    <div className="mt-3 flex items-center gap-1.5 text-[10px] uppercase font-bold text-black/30 dark:text-white/25">
+                      <Clock3 size={10} />
+                      {new Date(n.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
-
-      {/* Form */}
-      {showForm && (
-        <div className="rounded-2xl bg-white border border-slate-200 shadow-sm p-6 dark:bg-[#1a1d2e] dark:border-white/8 dark:shadow-xl">
-          <h2 className="text-sm font-bold text-slate-800 dark:text-white/80 mb-5">Add New Note</h2>
-          <form onSubmit={handleAdd} className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label className={LABEL}>Entity Type</label>
-              <select value={form.entityType} onChange={e => setForm(f => ({ ...f, entityType: e.target.value }))} className={INPUT}>
-                <option value="guest">Guest</option>
-                <option value="episode">Episode</option>
-              </select>
-            </div>
-            <div>
-              <label className={LABEL}>Entity ID</label>
-              <input type="text" placeholder="e.g. guest-123" value={form.entityId} onChange={e => setForm(f => ({ ...f, entityId: e.target.value }))} className={INPUT} />
-            </div>
-            <div className="sm:col-span-2">
-              <label className={LABEL}>Note Body *</label>
-              <textarea placeholder="Write your note here…" value={form.body} onChange={e => setForm(f => ({ ...f, body: e.target.value }))} className={INPUT} rows={4} required />
-            </div>
-            <div className="sm:col-span-2 flex gap-3 pt-2">
-              <button type="submit" disabled={saving}
-                className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-5 py-2.5 text-sm font-bold text-white shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5 disabled:opacity-40">
-                <Send size={14} /> Save Note
-              </button>
-              <button type="button" onClick={() => setShowForm(false)} className="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-all dark:border-white/10 dark:bg-white/5 dark:text-white/50 dark:hover:bg-white/8">
-                Cancel
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      {/* Notes list */}
-      {notes.length === 0 ? (
-        <div className="rounded-2xl bg-white border border-slate-100 dark:bg-[#1a1d2e] dark:border-white/5 p-16 flex flex-col items-center text-slate-300 dark:text-white/20">
-          <FileText size={36} className="mb-3" /><p className="text-sm">No notes yet</p>
-        </div>
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {notes.map((n, i) => (
-            <div key={n.id} className="relative overflow-hidden rounded-2xl bg-white border border-slate-100 p-5 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 dark:bg-[#1a1d2e] dark:border-white/5 dark:shadow-lg dark:hover:shadow-xl">
-              <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${CARD_ACCENTS[i % CARD_ACCENTS.length]}`} />
-              <div className="flex items-start justify-between mb-3">
-                <span className={`rounded-full px-2.5 py-1 text-[10px] font-semibold capitalize ${TYPE_BADGE[n.entityType] ?? 'bg-slate-100 text-slate-600 dark:bg-white/8 dark:text-white/40'}`}>
-                  {n.entityType}
-                </span>
-                <button onClick={() => handleDelete(n.id)}
-                  className="rounded-lg p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:text-white/20 dark:hover:text-red-400 dark:hover:bg-red-500/10 transition-all">
-                  <Trash2 size={13} />
-                </button>
-              </div>
-              <p className="text-sm text-slate-700 dark:text-white/80 leading-relaxed line-clamp-3">{n.body}</p>
-              {n.entityId && <p className="mt-2 text-[10px] font-mono text-slate-400 dark:text-white/25 truncate">{n.entityId}</p>}
-              <div className="mt-3 flex items-center gap-1.5 text-[10px] text-slate-400 dark:text-white/25">
-                <Clock3 size={10} />
-                {new Date(n.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 }

@@ -4,17 +4,10 @@ import { useAuth } from '../../context/AuthContext';
 import { getGuests, getPipelineStages } from '../../services/api';
 import { Users, Search, ArrowRight, Mail, Tag } from 'lucide-react';
 
-const CARD_GRADIENTS = [
-  'from-violet-600 to-purple-700','from-blue-600 to-cyan-600',
-  'from-pink-500 to-rose-600','from-amber-500 to-orange-600',
-  'from-emerald-500 to-teal-600','from-indigo-600 to-blue-700',
-];
+const DIVIDER = 'border-black/[0.08] dark:border-white/[0.08] divide-black/[0.08] dark:divide-white/[0.08]';
+
 const STAGE_COLORS = [
-  'bg-violet-100 text-violet-700 border-violet-200 dark:bg-violet-500/15 dark:text-violet-300 dark:border-violet-500/20',
-  'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/20',
-  'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/20',
-  'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/20',
-  'bg-pink-100 text-pink-700 border-pink-200 dark:bg-pink-500/15 dark:text-pink-300 dark:border-pink-500/20',
+  'bg-black/5 text-black/60 dark:bg-white/10 dark:text-white/60',
 ];
 
 export default function Guests() {
@@ -37,88 +30,98 @@ export default function Guests() {
   );
 
   if (loading) return (
-    <div className="flex items-center justify-center h-80">
-      <div className="h-10 w-10 rounded-full border-4 border-blue-200 border-t-blue-600 animate-spin dark:border-violet-500/30 dark:border-t-violet-500" />
+    <div className="flex items-center justify-center h-80 bg-white dark:bg-[#0f1117]">
+      <div className="flex flex-col items-center gap-3">
+        <div className="h-9 w-9 border-4 border-black/10 border-t-black animate-spin dark:border-white/10 dark:border-t-white" />
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-black/25 dark:text-white/20">Loading…</p>
+      </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#0f1117] p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Users size={14} className="text-blue-500 dark:text-blue-400" />
-            <span className="text-xs font-semibold uppercase tracking-widest text-blue-500 dark:text-blue-400">People</span>
+    <div className="bg-white dark:bg-[#0f1117] text-black dark:text-white min-h-[calc(100vh-64px)] flex flex-col">
+      
+      {/* ══ HEADER ═════════════════════════════════════════════════════ */}
+      <div className={`border-b ${DIVIDER} bg-white dark:bg-[#0a0c12]`}>
+        <div className="px-8 py-7 flex items-center justify-between gap-6">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <Users size={12} className="text-blue-500 dark:text-blue-400" />
+              <span className="text-[10px] font-bold uppercase tracking-widest text-blue-500 dark:text-blue-400">People</span>
+            </div>
+            <h1 className="text-3xl font-extrabold tracking-tight leading-none">Guests.</h1>
+            <p className="text-sm text-black/35 dark:text-white/30 mt-2">{guests.length} total guests registered</p>
           </div>
-          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Guests</h1>
-          <p className="text-sm text-slate-400 dark:text-white/35 mt-0.5">{guests.length} total guests</p>
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <Search size={13} className="absolute left-4 top-1/2 -translate-y-1/2 text-black/30 dark:text-white/20" />
+              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search guests…"
+                className={`pl-10 pr-4 py-2 border ${DIVIDER} bg-black/[0.02] dark:bg-white/[0.02] text-xs font-bold focus:outline-none focus:border-black dark:focus:border-white w-52 transition-all focus:w-64 placeholder:text-black/30 dark:placeholder:text-white/20`} />
+            </div>
+            <Link to="/admin/guests" className={`border border-black dark:border-white bg-black dark:bg-white text-white dark:text-black px-5 py-2.5 text-xs font-bold hover:opacity-80 transition-opacity`}>
+              + Add Guest
+            </Link>
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/25" />
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search guests…"
-              className="pl-8 pr-4 py-2 rounded-xl bg-white border border-slate-200 text-sm text-slate-600 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-200 w-52 dark:bg-white/5 dark:border-white/8 dark:text-white/60 dark:placeholder:text-white/25 dark:focus:ring-1 dark:focus:ring-blue-500/50" />
-          </div>
-          <Link to="/admin/guests" className="rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all hover:-translate-y-0.5">
-            + Add Guest
-          </Link>
+
+        {/* Stats strip */}
+        <div className={`grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x ${DIVIDER} border-t ${DIVIDER}`}>
+          {[
+            { label: 'Total Guests',  value: guests.length },
+            { label: 'Stages Active', value: stages.length },
+            { label: 'Unassigned',    value: guests.filter(g => !g.stageId).length },
+          ].map(({ label, value }) => (
+            <div key={label} className="relative overflow-hidden p-6 group group-hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-black/40 dark:text-white/30">{label}</p>
+              <p className="mt-2 text-3xl font-extrabold tracking-tight">{value}</p>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
-        {[
-          { label: 'Total Guests',  value: guests.length,                          gradient: 'from-violet-600 to-purple-700' },
-          { label: 'Stages Active', value: stages.length,                          gradient: 'from-blue-600 to-cyan-600' },
-          { label: 'Unassigned',    value: guests.filter(g => !g.stageId).length, gradient: 'from-amber-500 to-orange-600' },
-        ].map(({ label, value, gradient }) => (
-          <div key={label} className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${gradient} p-5 shadow-lg`}>
-            <div className="absolute -right-4 -top-4 h-20 w-20 rounded-full bg-white/10" />
-            <p className="text-xs font-semibold uppercase tracking-widest text-white/60">{label}</p>
-            <p className="mt-1 text-3xl font-extrabold text-white">{value}</p>
+      {/* ══ CONTENT GRID ══════════════════════════════════════════════════ */}
+      <div className={`flex-1 border-b ${DIVIDER}`}>
+        {filtered.length === 0 ? (
+          <div className="py-24 flex flex-col items-center text-black/20 dark:text-white/15 select-none">
+            <Users size={36} className="mb-3" />
+            <p className="text-xs font-bold uppercase tracking-widest">No guests found</p>
           </div>
-        ))}
-      </div>
-
-      {/* Guest cards */}
-      {filtered.length === 0 ? (
-        <div className="rounded-2xl bg-white border border-slate-100 dark:bg-[#1a1d2e] dark:border-white/5 p-16 flex flex-col items-center text-slate-300 dark:text-white/20">
-          <Users size={36} className="mb-3" />
-          <p className="text-sm">No guests found</p>
-        </div>
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {filtered.map((g, i) => {
-            const stage = stageMap[g.stageId];
-            return (
-              <Link key={g.id} to={`/app/guests/${g.id}`}
-                className="group relative overflow-hidden rounded-2xl bg-white border border-slate-100 p-5 shadow-sm hover:shadow-md hover:border-slate-200 transition-all duration-300 hover:-translate-y-1 dark:bg-[#1a1d2e] dark:border-white/5 dark:shadow-lg dark:hover:shadow-xl dark:hover:border-white/10">
-                <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${CARD_GRADIENTS[i % CARD_GRADIENTS.length]}`} />
-                <div className={`h-[52px] w-[52px] rounded-2xl bg-gradient-to-br ${CARD_GRADIENTS[i % CARD_GRADIENTS.length]} flex items-center justify-center text-lg font-extrabold text-white shadow-lg mb-4`}>
-                  {g.name.slice(0, 2).toUpperCase()}
-                </div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white/90 truncate group-hover:text-slate-900 dark:group-hover:text-white">{g.name}</h3>
-                <div className="flex items-center gap-1.5 mt-1">
-                  <Mail size={10} className="text-slate-400 dark:text-white/25 flex-none" />
-                  <p className="text-xs text-slate-400 dark:text-white/35 truncate">{g.email}</p>
-                </div>
-                {stage && (
-                  <div className="mt-3">
-                    <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-semibold border ${stage.color}`}>
-                      <Tag size={8} /> {stage.label}
-                    </span>
+        ) : (
+          <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 divide-y sm:divide-y-0 ${DIVIDER}`}>
+            {filtered.map((g) => {
+              const stage = stageMap[g.stageId];
+              return (
+                <Link key={g.id} to={`/app/guests/${g.id}`}
+                  className={`relative p-6 border-b sm:border-r ${DIVIDER} hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors group`}>
+                  
+                  <div className="h-12 w-12 bg-black/5 dark:bg-white/10 flex items-center justify-center text-[10px] uppercase font-extrabold text-black dark:text-white mb-5 transition-colors group-hover:bg-black/10 dark:group-hover:bg-white/20">
+                    {g.name.slice(0, 2)}
                   </div>
-                )}
-                <div className="mt-4 flex items-center justify-between">
-                  <span className="text-[10px] text-slate-400 dark:text-white/25">{new Date(g.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-                  <span className="flex items-center gap-1 text-[10px] font-semibold text-slate-400 dark:text-white/30 group-hover:text-violet-600 dark:group-hover:text-violet-400">View <ArrowRight size={10} /></span>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-      )}
+                  
+                  <h3 className="text-sm font-bold text-black dark:text-white truncate">{g.name}</h3>
+                  <div className="flex items-center gap-2 mt-1.5">
+                    <Mail size={10} className="text-black/30 dark:text-white/20 flex-none" />
+                    <p className="text-xs font-bold text-black/40 dark:text-white/30 tracking-widest uppercase truncate">{g.email}</p>
+                  </div>
+                  
+                  {stage && (
+                    <div className="mt-4">
+                      <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest ${stage.color}`}>
+                        <Tag size={8} /> {stage.label}
+                      </span>
+                    </div>
+                  )}
+                  
+                  <div className="mt-6 pt-4 border-t border-black/10 dark:border-white/10 flex items-center justify-between">
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-black/30 dark:text-white/20">{new Date(g.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                    <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-black/30 dark:text-white/20 group-hover:text-black dark:group-hover:text-white transition-colors">View <ArrowRight size={10} /></span>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

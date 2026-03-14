@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { getBookings, getGuestById } from '../../services/api';
-import { CalendarDays, Clock3, CheckCircle2, XCircle, Search } from 'lucide-react';
+import { CalendarDays, Clock3, CheckCircle2, XCircle, Search, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
+
+const DIVIDER = 'border-black/[0.08] dark:border-white/[0.08] divide-black/[0.08] dark:divide-white/[0.08]';
 
 const STATUS_META = {
-  scheduled: { gradient: 'from-amber-600 to-orange-600',  badge: 'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/20',    icon: Clock3,       label: 'Scheduled' },
-  completed: { gradient: 'from-emerald-600 to-teal-600',  badge: 'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/20',icon: CheckCircle2, label: 'Completed' },
-  cancelled: { gradient: 'from-red-600 to-rose-700',      badge: 'bg-red-100 text-red-700 border-red-200 dark:bg-red-500/15 dark:text-red-300 dark:border-red-500/20',                     icon: XCircle,      label: 'Cancelled' },
+  scheduled: { badge: 'bg-black/5 text-black dark:bg-white/10 dark:text-white',    icon: Clock3,       label: 'Scheduled' },
+  completed: { badge: 'bg-black text-white dark:bg-white dark:text-black',icon: CheckCircle2, label: 'Completed' },
+  cancelled: { badge: 'border border-black/20 text-black/60 dark:border-white/20 dark:text-white/60', icon: XCircle,      label: 'Cancelled' },
 };
-const CARD_ACCENT = ['from-amber-500 to-orange-600','from-violet-600 to-purple-700','from-blue-600 to-cyan-600','from-emerald-500 to-teal-600','from-pink-500 to-rose-600','from-indigo-600 to-blue-700'];
 
 export default function Bookings() {
   const { tenant } = useAuth();
@@ -35,92 +37,103 @@ export default function Bookings() {
   });
 
   if (loading) return (
-    <div className="flex items-center justify-center h-80">
-      <div className="h-10 w-10 rounded-full border-4 border-amber-200 border-t-amber-600 animate-spin dark:border-amber-500/30 dark:border-t-amber-500" />
+    <div className="flex items-center justify-center h-80 bg-white dark:bg-[#0f1117]">
+      <div className="flex flex-col items-center gap-3">
+        <div className="h-9 w-9 border-4 border-black/10 border-t-black animate-spin dark:border-white/10 dark:border-t-white" />
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-black/25 dark:text-white/20">Loading…</p>
+      </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#0f1117] p-6 space-y-6">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <CalendarDays size={14} className="text-amber-500 dark:text-amber-400" />
-            <span className="text-xs font-semibold uppercase tracking-widest text-amber-500 dark:text-amber-400">Schedule</span>
+    <div className="bg-white dark:bg-[#0f1117] text-black dark:text-white min-h-[calc(100vh-64px)] flex flex-col">
+      
+      {/* ══ HEADER ═════════════════════════════════════════════════════ */}
+      <div className={`border-b ${DIVIDER} bg-white dark:bg-[#0a0c12]`}>
+        <div className="px-8 py-7 flex items-center justify-between gap-6">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <CalendarDays size={12} className="text-amber-500 dark:text-amber-400" />
+              <span className="text-[10px] font-bold uppercase tracking-widest text-amber-500 dark:text-amber-400">Schedule</span>
+            </div>
+            <h1 className="text-3xl font-extrabold tracking-tight leading-none">Bookings.</h1>
+            <p className="text-sm text-black/35 dark:text-white/30 mt-2">{bookings.length} total recordings scheduled</p>
           </div>
-          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Bookings</h1>
-          <p className="text-sm text-slate-400 dark:text-white/35 mt-0.5">{bookings.length} total recordings scheduled</p>
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <Search size={13} className="absolute left-4 top-1/2 -translate-y-1/2 text-black/30 dark:text-white/20" />
+              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search bookings…"
+                className={`pl-10 pr-4 py-2 border ${DIVIDER} bg-black/[0.02] dark:bg-white/[0.02] text-xs font-bold focus:outline-none focus:border-black dark:focus:border-white w-52 transition-all focus:w-64 placeholder:text-black/30 dark:placeholder:text-white/20`} />
+            </div>
+            <Link to="/admin/bookings" className={`border border-black dark:border-white bg-black dark:bg-white text-white dark:text-black px-5 py-2.5 text-xs font-bold hover:opacity-80 transition-opacity`}>
+              + Add Booking
+            </Link>
+          </div>
         </div>
-        <div className="relative">
-          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/25" />
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by guest…"
-            className="pl-8 pr-4 py-2 rounded-xl bg-white border border-slate-200 text-sm text-slate-600 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-200 w-52 dark:bg-white/5 dark:border-white/8 dark:text-white/60 dark:placeholder:text-white/25 dark:focus:ring-1 dark:focus:ring-amber-500/50" />
-        </div>
-      </div>
 
-      {/* Status cards */}
-      <div className="grid grid-cols-3 gap-4">
-        {Object.entries(STATUS_META).map(([status, meta]) => {
-          const Icon = meta.icon;
-          const count = bookings.filter(b => b.status === status).length;
-          return (
-            <button key={status} onClick={() => setFilter(filter === status ? 'all' : status)}
-              className={`relative overflow-hidden rounded-2xl p-5 text-left shadow-lg transition-all hover:-translate-y-0.5 ${filter === status ? 'ring-2 ring-violet-400/50 dark:ring-white/25' : ''}`}>
-              <div className={`absolute inset-0 bg-gradient-to-br ${meta.gradient}`} />
-              <div className="absolute -right-4 -top-4 h-20 w-20 rounded-full bg-white/10" />
-              <div className="relative z-10 flex items-start justify-between">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-widest text-white/60">{meta.label}</p>
-                  <p className="mt-1 text-3xl font-extrabold text-white">{count}</p>
-                </div>
-                <div className="rounded-xl bg-white/20 p-2"><Icon size={18} className="text-white" /></div>
-              </div>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Booking cards */}
-      {filtered.length === 0 ? (
-        <div className="rounded-2xl bg-white border border-slate-100 dark:bg-[#1a1d2e] dark:border-white/5 p-16 flex flex-col items-center text-slate-300 dark:text-white/20">
-          <CalendarDays size={36} className="mb-3" /><p className="text-sm">No bookings found</p>
-        </div>
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((b, i) => {
-            const meta = STATUS_META[b.status] ?? STATUS_META.scheduled;
-            const Icon = meta.icon;
-            const guestName = guestNames[b.guestId] ?? 'No guest';
-            const date = new Date(b.scheduledAt);
+        {/* Stats strip */}
+        <div className={`grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x ${DIVIDER} border-t ${DIVIDER}`}>
+          {Object.entries(STATUS_META).map(([status, meta]) => {
+            const count = bookings.filter(b => b.status === status).length;
+            const active = filter === status;
             return (
-              <div key={b.id} className="relative overflow-hidden rounded-2xl bg-white border border-slate-100 p-5 shadow-sm hover:shadow-md hover:border-slate-200 transition-all duration-300 hover:-translate-y-1 dark:bg-[#1a1d2e] dark:border-white/5 dark:shadow-lg dark:hover:shadow-xl dark:hover:border-white/10">
-                <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${CARD_ACCENT[i % CARD_ACCENT.length]}`} />
-                <div className="flex items-center gap-3 mb-4">
-                  <div className={`h-10 w-10 rounded-xl bg-gradient-to-br ${CARD_ACCENT[i % CARD_ACCENT.length]} flex items-center justify-center text-xs font-bold text-white shadow-lg flex-none`}>
-                    {guestName.slice(0, 2).toUpperCase()}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-bold text-slate-900 dark:text-white/90 truncate">{guestName}</p>
-                    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold border ${meta.badge}`}>
-                      <Icon size={8} /> {meta.label}
-                    </span>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 rounded-xl bg-slate-50 dark:bg-white/5 px-3 py-2">
-                    <CalendarDays size={12} className="text-slate-400 dark:text-white/35 flex-none" />
-                    <span className="text-xs text-slate-600 dark:text-white/60">{date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
-                  </div>
-                  <div className="flex items-center gap-2 rounded-xl bg-slate-50 dark:bg-white/5 px-3 py-2">
-                    <Clock3 size={12} className="text-slate-400 dark:text-white/35 flex-none" />
-                    <span className="text-xs text-slate-600 dark:text-white/60">{date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })} · {b.durationMinutes} min</span>
-                  </div>
-                </div>
-              </div>
+              <button key={status} onClick={() => setFilter(filter === status ? 'all' : status)}
+                className={`relative overflow-hidden p-6 text-left group transition-colors ${active ? 'bg-black/[0.04] dark:bg-white/[0.04]' : 'hover:bg-black/[0.02] dark:hover:bg-white/[0.02]'}`}>
+                <div className={`absolute top-0 right-0 h-full w-1 transition-opacity ${active ? 'bg-black dark:bg-white opacity-100' : 'bg-transparent opacity-0 group-hover:bg-black/10 dark:group-hover:bg-white/10 group-hover:opacity-100'}`} />
+                <p className={`text-[10px] font-bold uppercase tracking-widest ${active ? 'text-black dark:text-white' : 'text-black/40 dark:text-white/30'}`}>{meta.label}</p>
+                <p className="mt-2 text-3xl font-extrabold tracking-tight">{count}</p>
+              </button>
             );
           })}
         </div>
-      )}
+      </div>
+
+      {/* ══ CONTENT GRID ══════════════════════════════════════════════════ */}
+      <div className={`flex-1 border-b ${DIVIDER}`}>
+        {filtered.length === 0 ? (
+          <div className="py-24 flex flex-col items-center text-black/20 dark:text-white/15 select-none">
+            <CalendarDays size={36} className="mb-3" />
+            <p className="text-xs font-bold uppercase tracking-widest">No bookings found</p>
+          </div>
+        ) : (
+          <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 divide-y sm:divide-y-0 ${DIVIDER}`}>
+            {filtered.map((b) => {
+              const meta = STATUS_META[b.status] ?? STATUS_META.scheduled;
+              const Icon = meta.icon;
+              const guestName = guestNames[b.guestId] ?? 'No guest';
+              const date = new Date(b.scheduledAt);
+              return (
+                <div key={b.id} className={`relative p-6 border-b sm:border-r ${DIVIDER} hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors group`}>
+                  <div className="flex flex-col gap-4">
+                    <div className="flex items-start justify-between">
+                       <div className="h-10 w-10 flex items-center justify-center text-[10px] font-extrabold text-black dark:text-white bg-black/5 dark:bg-white/10 uppercase group-hover:bg-black/10 dark:group-hover:bg-white/20 transition-colors">
+                        {guestName.slice(0, 2)}
+                       </div>
+                       <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest ${meta.badge}`}>
+                        <Icon size={8} /> {meta.label}
+                       </span>
+                    </div>
+                    
+                    <div>
+                      <h3 className="text-sm font-bold text-black dark:text-white truncate">{guestName}</h3>
+                      <div className="mt-2 space-y-1.5">
+                        <div className="flex items-center gap-2">
+                          <CalendarDays size={10} className="text-black/30 dark:text-white/20 flex-none" />
+                          <span className="text-[11px] font-bold uppercase tracking-widest text-black/50 dark:text-white/40">{date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Clock3 size={10} className="text-black/30 dark:text-white/20 flex-none" />
+                          <span className="text-[11px] font-bold uppercase tracking-widest text-black/50 dark:text-white/40">{date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })} · {b.durationMinutes} min</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

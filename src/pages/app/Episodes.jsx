@@ -4,13 +4,14 @@ import { useAuth } from '../../context/AuthContext';
 import { getEpisodes, getGuestById } from '../../services/api';
 import { Mic2, Search, ArrowRight, Radio, Clock3, CheckCircle2, FileEdit } from 'lucide-react';
 
+const DIVIDER = 'border-black/[0.08] dark:border-white/[0.08] divide-black/[0.08] dark:divide-white/[0.08]';
+
 const STATUS_META = {
-  draft:     { color: 'from-slate-500 to-slate-600',    badge: 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-500/15 dark:text-slate-300 dark:border-slate-500/20', icon: FileEdit,     label: 'Draft' },
-  scheduled: { color: 'from-amber-600 to-orange-600',   badge: 'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/20',   icon: Clock3,       label: 'Scheduled' },
-  recorded:  { color: 'from-emerald-600 to-teal-600',   badge: 'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/20', icon: CheckCircle2, label: 'Recorded' },
-  published: { color: 'from-blue-600 to-cyan-600',      badge: 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/20',          icon: Radio,        label: 'Published' },
+  draft:     { badge: 'bg-black/5 text-black dark:bg-white/10 dark:text-white', icon: FileEdit,     label: 'Draft' },
+  scheduled: { badge: 'bg-black/5 text-black dark:bg-white/10 dark:text-white', icon: Clock3,       label: 'Scheduled' },
+  recorded:  { badge: 'bg-black/5 text-black dark:bg-white/10 dark:text-white', icon: CheckCircle2, label: 'Recorded' },
+  published: { badge: 'bg-black text-white dark:bg-white dark:text-black',          icon: Radio,        label: 'Published' },
 };
-const CARD_ACCENT = ['from-violet-600 to-purple-700','from-blue-600 to-cyan-600','from-pink-500 to-rose-600','from-amber-500 to-orange-600','from-emerald-500 to-teal-600','from-indigo-600 to-violet-700'];
 
 export default function Episodes() {
   const { tenant } = useAuth();
@@ -33,84 +34,96 @@ export default function Episodes() {
   const filtered = episodes.filter(ep => (filter === 'all' || ep.status === filter) && (!search || ep.title.toLowerCase().includes(search.toLowerCase())));
 
   if (loading) return (
-    <div className="flex items-center justify-center h-80">
-      <div className="h-10 w-10 rounded-full border-4 border-pink-200 border-t-pink-600 animate-spin dark:border-pink-500/30 dark:border-t-pink-500" />
+    <div className="flex items-center justify-center h-80 bg-white dark:bg-[#0f1117]">
+      <div className="flex flex-col items-center gap-3">
+        <div className="h-9 w-9 border-4 border-black/10 border-t-black animate-spin dark:border-white/10 dark:border-t-white" />
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-black/25 dark:text-white/20">Loading…</p>
+      </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#0f1117] p-6 space-y-6">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Mic2 size={14} className="text-pink-500 dark:text-pink-400" />
-            <span className="text-xs font-semibold uppercase tracking-widest text-pink-500 dark:text-pink-400">Content</span>
+    <div className="bg-white dark:bg-[#0f1117] text-black dark:text-white min-h-[calc(100vh-64px)] flex flex-col">
+      
+      {/* ══ HEADER ═════════════════════════════════════════════════════ */}
+      <div className={`border-b ${DIVIDER} bg-white dark:bg-[#0a0c12]`}>
+        <div className="px-8 py-7 flex items-center justify-between gap-6">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <Mic2 size={12} className="text-pink-500 dark:text-pink-400" />
+              <span className="text-[10px] font-bold uppercase tracking-widest text-pink-500 dark:text-pink-400">Content</span>
+            </div>
+            <h1 className="text-3xl font-extrabold tracking-tight leading-none">Episodes.</h1>
+            <p className="text-sm text-black/35 dark:text-white/30 mt-2">{episodes.length} total episodes</p>
           </div>
-          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Episodes</h1>
-          <p className="text-sm text-slate-400 dark:text-white/35 mt-0.5">{episodes.length} total episodes</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/25" />
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search episodes…"
-              className="pl-8 pr-4 py-2 rounded-xl bg-white border border-slate-200 text-sm text-slate-600 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-200 w-52 dark:bg-white/5 dark:border-white/8 dark:text-white/60 dark:placeholder:text-white/25 dark:focus:ring-1 dark:focus:ring-pink-500/50" />
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <Search size={13} className="absolute left-4 top-1/2 -translate-y-1/2 text-black/30 dark:text-white/20" />
+              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search episodes…"
+                className={`pl-10 pr-4 py-2 border ${DIVIDER} bg-black/[0.02] dark:bg-white/[0.02] text-xs font-bold focus:outline-none focus:border-black dark:focus:border-white w-52 transition-all focus:w-64 placeholder:text-black/30 dark:placeholder:text-white/20`} />
+            </div>
+            <Link to="/admin/episodes" className={`border border-black dark:border-white bg-black dark:bg-white text-white dark:text-black px-5 py-2.5 text-xs font-bold hover:opacity-80 transition-opacity`}>
+              + New Episode
+            </Link>
           </div>
-          <Link to="/admin/episodes" className="rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-pink-500/25 hover:shadow-pink-500/40 transition-all hover:-translate-y-0.5">
-            + New Episode
-          </Link>
         </div>
-      </div>
 
-      {/* Status filter cards */}
-      <div className="grid grid-cols-4 gap-4">
-        {Object.entries(STATUS_META).map(([status, meta]) => {
-          const Icon = meta.icon;
-          const count = episodes.filter(e => e.status === status).length;
-          return (
-            <button key={status} onClick={() => setFilter(filter === status ? 'all' : status)}
-              className={`relative overflow-hidden rounded-2xl p-4 text-left shadow-lg transition-all hover:-translate-y-0.5 ${filter === status ? 'ring-2 ring-violet-400/50 dark:ring-white/30' : ''}`}>
-              <div className={`absolute inset-0 bg-gradient-to-br ${meta.color}`} />
-              <div className="absolute -right-3 -top-3 h-16 w-16 rounded-full bg-white/10" />
-              <div className="relative z-10">
-                <Icon size={16} className="text-white/70 mb-2" />
-                <p className="text-2xl font-extrabold text-white">{count}</p>
-                <p className="text-xs text-white/60 capitalize mt-0.5">{meta.label}</p>
-              </div>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Episode cards */}
-      {filtered.length === 0 ? (
-        <div className="rounded-2xl bg-white border border-slate-100 dark:bg-[#1a1d2e] dark:border-white/5 p-16 flex flex-col items-center text-slate-300 dark:text-white/20">
-          <Mic2 size={36} className="mb-3" /><p className="text-sm">No episodes found</p>
-        </div>
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((ep, i) => {
-            const meta = STATUS_META[ep.status] ?? STATUS_META.draft;
-            const Icon = meta.icon;
+        {/* Status filter strip */}
+        <div className={`grid grid-cols-2 md:grid-cols-4 divide-x divide-y md:divide-y-0 ${DIVIDER} border-t ${DIVIDER}`}>
+          {Object.entries(STATUS_META).map(([status, meta]) => {
+            const count = episodes.filter(e => e.status === status).length;
+            const active = filter === status;
             return (
-              <Link key={ep.id} to={`/app/episodes/${ep.id}`}
-                className="group relative overflow-hidden rounded-2xl bg-white border border-slate-100 p-5 shadow-sm hover:shadow-md hover:border-slate-200 transition-all duration-300 hover:-translate-y-1 dark:bg-[#1a1d2e] dark:border-white/5 dark:shadow-lg dark:hover:shadow-xl dark:hover:border-white/10">
-                <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${CARD_ACCENT[i % CARD_ACCENT.length]}`} />
-                <div className={`h-11 w-11 rounded-xl bg-gradient-to-br ${CARD_ACCENT[i % CARD_ACCENT.length]} flex items-center justify-center mb-4 shadow-lg`}>
-                  <Mic2 size={18} className="text-white" />
-                </div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white/90 group-hover:text-slate-900 dark:group-hover:text-white line-clamp-2">{ep.title || 'Untitled Episode'}</h3>
-                {ep.guestId && guestNames[ep.guestId] && <p className="text-xs text-slate-400 dark:text-white/35 mt-1.5 truncate">with {guestNames[ep.guestId]}</p>}
-                <div className="mt-3 flex items-center justify-between">
-                  <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-semibold border ${meta.badge}`}>
-                    <Icon size={8} /> {meta.label}
-                  </span>
-                  <span className="flex items-center gap-1 text-[10px] font-semibold text-slate-400 dark:text-white/25 group-hover:text-pink-600 dark:group-hover:text-pink-400">View <ArrowRight size={10} /></span>
-                </div>
-              </Link>
+              <button key={status} onClick={() => setFilter(filter === status ? 'all' : status)}
+                className={`relative overflow-hidden p-6 text-left group transition-colors ${active ? 'bg-black/[0.04] dark:bg-white/[0.04]' : 'hover:bg-black/[0.02] dark:hover:bg-white/[0.02]'}`}>
+                <div className={`absolute top-0 right-0 h-full w-1 transition-opacity ${active ? 'bg-black dark:bg-white opacity-100' : 'bg-transparent opacity-0 group-hover:bg-black/10 dark:group-hover:bg-white/10 group-hover:opacity-100'}`} />
+                <p className={`text-[10px] font-bold uppercase tracking-widest ${active ? 'text-black dark:text-white' : 'text-black/40 dark:text-white/30'}`}>{meta.label}</p>
+                <p className="mt-2 text-3xl font-extrabold tracking-tight">{count}</p>
+              </button>
             );
           })}
         </div>
-      )}
+      </div>
+
+      {/* ══ CONTENT GRID ══════════════════════════════════════════════════ */}
+      <div className={`flex-1 border-b ${DIVIDER}`}>
+        {filtered.length === 0 ? (
+          <div className="py-24 flex flex-col items-center text-black/20 dark:text-white/15 select-none">
+            <Mic2 size={36} className="mb-3" />
+            <p className="text-xs font-bold uppercase tracking-widest">No episodes found</p>
+          </div>
+        ) : (
+          <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 divide-y sm:divide-y-0 ${DIVIDER}`}>
+            {filtered.map((ep) => {
+              const meta = STATUS_META[ep.status] ?? STATUS_META.draft;
+              const Icon = meta.icon;
+              return (
+                <Link key={ep.id} to={`/app/episodes/${ep.id}`}
+                  className={`relative p-6 border-b sm:border-r ${DIVIDER} hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors group`}>
+                  
+                  <div className="h-10 w-10 border border-dashed border-black/20 dark:border-white/20 mb-5 flex items-center justify-center">
+                    <Mic2 size={16} className="text-black/50 dark:text-white/50" />
+                  </div>
+                  
+                  <h3 className="text-sm font-bold text-black dark:text-white line-clamp-2">{ep.title || 'Untitled Episode'}</h3>
+                  {ep.guestId && guestNames[ep.guestId] && (
+                    <p className="text-[11px] font-bold uppercase tracking-widest text-black/40 dark:text-white/30 mt-2 truncate">
+                      with {guestNames[ep.guestId]}
+                    </p>
+                  )}
+                  
+                  <div className="mt-8 flex items-center justify-between border-t border-black/10 dark:border-white/10 pt-4">
+                    <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest ${meta.badge}`}>
+                      <Icon size={8} /> {meta.label}
+                    </span>
+                    <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-black/30 dark:text-white/20 group-hover:text-black dark:group-hover:text-white transition-colors">View <ArrowRight size={10} /></span>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

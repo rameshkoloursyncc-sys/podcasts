@@ -1,9 +1,11 @@
 import { useAuth } from '../../context/AuthContext';
 import { Settings, User, Building2, Shield, Bell, Palette, ChevronRight } from 'lucide-react';
 
+const DIVIDER = 'border-black/[0.08] dark:border-white/[0.08] divide-black/[0.08] dark:divide-white/[0.08]';
+
 const SECTION_CARDS = [
   {
-    icon: Building2, title: 'Workspace', gradient: 'from-violet-600 to-purple-700',
+    icon: Building2, title: 'Workspace',
     fields: (tenant) => [
       { label: 'Podcast Name', value: tenant?.name ?? '—' },
       { label: 'Slug',         value: tenant?.slug ?? '—' },
@@ -11,7 +13,7 @@ const SECTION_CARDS = [
     ],
   },
   {
-    icon: User, title: 'Account', gradient: 'from-blue-600 to-cyan-600',
+    icon: User, title: 'Account',
     fields: (_, user) => [
       { label: 'Display Name', value: user?.displayName ?? '—' },
       { label: 'Email',        value: user?.email ?? '—' },
@@ -21,81 +23,94 @@ const SECTION_CARDS = [
 ];
 
 const QUICK_SETTINGS = [
-  { icon: Bell,    label: 'Notifications', sub: 'Email & in-app alerts',   gradient: 'from-amber-500 to-orange-600' },
-  { icon: Shield,  label: 'Security',      sub: 'Password & 2FA',          gradient: 'from-emerald-600 to-teal-600' },
-  { icon: Palette, label: 'Appearance',    sub: 'Theme & display options', gradient: 'from-pink-500 to-rose-600' },
+  { icon: Bell,    label: 'Notifications', sub: 'Email & in-app alerts' },
+  { icon: Shield,  label: 'Security',      sub: 'Password & 2FA' },
+  { icon: Palette, label: 'Appearance',    sub: 'Theme & display options' },
 ];
 
 export default function SettingsPage() {
   const { tenant, user } = useAuth();
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#0f1117] p-6 space-y-6">
-      <div>
-        <div className="flex items-center gap-2 mb-1">
-          <Settings size={14} className="text-slate-500 dark:text-slate-400" />
-          <span className="text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">Configuration</span>
+    <div className="bg-white dark:bg-[#0f1117] text-black dark:text-white min-h-[calc(100vh-64px)] flex flex-col">
+      {/* ══ HEADER ═════════════════════════════════════════════════════ */}
+      <div className={`border-b ${DIVIDER} bg-white dark:bg-[#0a0c12]`}>
+        <div className="px-8 py-7">
+          <div className="flex items-center gap-2 mb-2">
+            <Settings size={12} className="text-black/40 dark:text-white/40" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-black/50 dark:text-white/40">Configuration</span>
+          </div>
+          <h1 className="text-3xl font-extrabold tracking-tight leading-none">Settings.</h1>
+          <p className="text-sm text-black/35 dark:text-white/30 mt-2">Manage your workspace and account operations</p>
         </div>
-        <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Settings</h1>
-        <p className="text-sm text-slate-400 dark:text-white/35 mt-0.5">Manage your workspace and account</p>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        {SECTION_CARDS.map(({ icon: Icon, title, gradient, fields }) => (
-          <div key={title} className="relative overflow-hidden rounded-2xl bg-white border border-slate-100 shadow-sm dark:bg-[#1a1d2e] dark:border-white/5 dark:shadow-xl">
-            <div className={`bg-gradient-to-r ${gradient} px-6 py-5 flex items-center gap-3`}>
-              <div className="h-10 w-10 rounded-xl bg-white/20 flex items-center justify-center">
-                <Icon size={20} className="text-white" />
-              </div>
-              <h2 className="text-base font-bold text-white">{title}</h2>
-            </div>
-            <div className="p-6 space-y-4">
-              {fields(tenant, user).map(({ label, value }) => (
-                <div key={label} className="flex items-center justify-between rounded-xl bg-slate-50 border border-slate-100 px-4 py-3 dark:bg-white/4 dark:border-white/5">
-                  <span className="text-xs font-medium text-slate-500 dark:text-white/40 uppercase tracking-wider">{label}</span>
-                  <span className="text-sm font-semibold text-slate-800 dark:text-white/80 max-w-[60%] truncate text-right">{value}</span>
+      {/* ══ CONTENT GRID ══════════════════════════════════════════════════ */}
+      <div className={`flex flex-1 divide-x ${DIVIDER}`}>
+        
+        {/* Main Settings Column */}
+        <div className="flex-1 flex flex-col">
+          
+          <div className={`grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x ${DIVIDER} border-b ${DIVIDER}`}>
+            {SECTION_CARDS.map(({ icon: Icon, title, fields }) => (
+              <div key={title} className="flex flex-col">
+                <div className={`p-6 border-b ${DIVIDER} flex items-center gap-4`}>
+                  <div className="h-12 w-12 bg-black/5 dark:bg-white/10 flex items-center justify-center">
+                    <Icon size={16} className="text-black/50 dark:text-white/50" />
+                  </div>
+                  <h2 className="text-[11px] font-bold uppercase tracking-widest">{title}</h2>
                 </div>
-              ))}
+                <div className="flex-1">
+                  {fields(tenant, user).map(({ label, value }) => (
+                    <div key={label} className={`flex items-center justify-between p-6 border-b ${DIVIDER} last:border-b-0`}>
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-black/40 dark:text-white/30">{label}</span>
+                      <span className="text-xs font-bold truncate max-w-[60%] text-right">{value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex flex-col">
+            <div className={`p-6 border-b ${DIVIDER}`}>
+              <h2 className="text-[11px] font-bold uppercase tracking-widest text-red-600 dark:text-red-500">Danger Zone</h2>
+              <p className="text-[10px] uppercase font-bold tracking-widest text-black/30 dark:text-white/20 mt-2">Irreversible actions — proceed with caution</p>
+            </div>
+            <div className={`p-6 flex items-center justify-between border-b ${DIVIDER} bg-red-50 dark:bg-red-500/5`}>
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-widest text-red-700 dark:text-red-400">Reset all system data</p>
+                <p className="text-[10px] uppercase font-bold tracking-widest text-red-700/50 dark:text-red-400/50 mt-1">Clears guests, episodes, bookings and notes</p>
+              </div>
+              <button className="border border-red-200 dark:border-red-500/20 px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-red-600 dark:text-red-400 hover:bg-red-600 hover:text-white dark:hover:bg-red-500 dark:hover:text-white transition-colors">
+                Reset Data
+              </button>
             </div>
           </div>
-        ))}
-      </div>
+        </div>
 
-      <div className="rounded-2xl bg-white border border-slate-100 shadow-sm dark:bg-[#1a1d2e] dark:border-white/5 dark:shadow-xl overflow-hidden">
-        <div className="px-6 py-4 border-b border-slate-100 dark:border-white/5">
-          <h2 className="text-sm font-bold text-slate-800 dark:text-white/80">Quick Settings</h2>
-          <p className="text-xs text-slate-400 dark:text-white/30 mt-0.5">Manage preferences and configurations</p>
-        </div>
-        <div className="p-4 space-y-3">
-          {QUICK_SETTINGS.map(({ icon: Icon, label, sub, gradient }) => (
-            <button key={label} className="w-full flex items-center gap-4 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-100 hover:border-slate-200 px-4 py-3.5 transition-all group text-left dark:bg-white/4 dark:hover:bg-white/8 dark:border-white/5 dark:hover:border-white/10">
-              <div className={`h-10 w-10 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center flex-none shadow-lg`}>
-                <Icon size={16} className="text-white" />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-semibold text-slate-700 dark:text-white/80 group-hover:text-slate-900 dark:group-hover:text-white">{label}</p>
-                <p className="text-xs text-slate-400 dark:text-white/30">{sub}</p>
-              </div>
-              <ChevronRight size={15} className="text-slate-300 dark:text-white/20 group-hover:text-slate-500 dark:group-hover:text-white/50" />
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="rounded-2xl bg-white border border-red-100 shadow-sm dark:bg-[#1a1d2e] dark:border-red-500/15 dark:shadow-xl overflow-hidden">
-        <div className="px-6 py-4 border-b border-red-100 dark:border-red-500/10">
-          <h2 className="text-sm font-bold text-red-500 dark:text-red-400">Danger Zone</h2>
-          <p className="text-xs text-slate-400 dark:text-white/30 mt-0.5">Irreversible actions — proceed with caution</p>
-        </div>
-        <div className="p-6 flex items-center justify-between">
-          <div>
-            <p className="text-sm font-semibold text-slate-700 dark:text-white/70">Reset all data</p>
-            <p className="text-xs text-slate-400 dark:text-white/30 mt-0.5">Clears all guests, episodes, bookings and notes</p>
+        {/* Quick Settings Sidebar */}
+        <div className="w-80 flex-none bg-black/[0.02] dark:bg-white/[0.02] flex flex-col">
+          <div className={`px-6 py-8 border-b ${DIVIDER}`}>
+            <h2 className="text-[11px] font-bold uppercase tracking-widest">Quick Toggles</h2>
+            <p className="text-[10px] uppercase font-bold tracking-widest text-black/30 dark:text-white/20 mt-2">Preferences and adjustments</p>
           </div>
-          <button className="rounded-xl bg-red-50 hover:bg-red-100 border border-red-200 px-4 py-2 text-xs font-bold text-red-600 hover:text-red-700 transition-all dark:bg-red-500/15 dark:hover:bg-red-500/25 dark:border-red-500/20 dark:text-red-400 dark:hover:text-red-300">
-            Reset Data
-          </button>
+          <div className="flex-1">
+            {QUICK_SETTINGS.map(({ icon: Icon, label, sub }) => (
+              <button key={label} className={`w-full flex items-center gap-4 px-6 py-5 border-b ${DIVIDER} hover:bg-black/[0.04] dark:hover:bg-white/[0.04] transition-colors group text-left`}>
+                <div className="h-10 w-10 flex items-center justify-center bg-black/5 dark:bg-white/10 flex-none group-hover:bg-black/10 dark:group-hover:bg-white/20 transition-colors">
+                  <Icon size={14} className="text-black/50 dark:text-white/50 group-hover:text-black dark:group-hover:text-white transition-colors" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-[11px] font-bold uppercase tracking-widest group-hover:text-black dark:group-hover:text-white">{label}</p>
+                  <p className="text-[9px] uppercase font-bold tracking-widest text-black/30 dark:text-white/30 mt-1">{sub}</p>
+                </div>
+                <ChevronRight size={12} className="text-black/20 dark:text-white/20 group-hover:text-black dark:group-hover:text-white" />
+              </button>
+            ))}
+          </div>
         </div>
+
       </div>
     </div>
   );

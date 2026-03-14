@@ -4,8 +4,6 @@ import { useAuth } from '../../context/AuthContext';
 import { getGuestById, getPipelineStages, getNotes, createNote } from '../../services/api';
 import { ArrowLeft, Mail, Tag, FileText, Send, Clock3 } from 'lucide-react';
 
-const GRADIENTS = ['from-violet-600 to-purple-700','from-blue-600 to-cyan-600','from-pink-500 to-rose-600','from-amber-500 to-orange-600','from-emerald-500 to-teal-600'];
-
 export default function GuestProfile() {
   const { id } = useParams();
   const { tenant, user } = useAuth();
@@ -35,88 +33,117 @@ export default function GuestProfile() {
   }
 
   if (loading) return (
-    <div className="flex items-center justify-center h-80">
-      <div className="h-10 w-10 rounded-full border-4 border-violet-200 border-t-violet-600 animate-spin dark:border-violet-500/30 dark:border-t-violet-500" />
+    <div className="flex items-center justify-center h-80 bg-white dark:bg-[#0f1117]">
+      <div className="flex flex-col items-center gap-3">
+        <div className="h-9 w-9 border-4 border-black/10 border-t-black animate-spin dark:border-white/10 dark:border-t-white" />
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-black/25 dark:text-white/20">Loading…</p>
+      </div>
     </div>
   );
-  if (!guest) return <div className="p-6 text-slate-500 dark:text-white/40">Guest not found.</div>;
+  if (!guest) return <div className="p-8 text-[10px] font-bold uppercase tracking-widest text-black/40 dark:text-white/40">Guest not found.</div>;
 
   const stage = stages.find(s => s.id === guest.stageId);
   const stageIdx = stages.findIndex(s => s.id === guest.stageId);
-  const grad = GRADIENTS[Math.abs((id.charCodeAt(0) || 0)) % GRADIENTS.length];
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#0f1117] p-6 space-y-6">
-      <Link to="/app/guests" className="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-slate-800 dark:text-white/40 dark:hover:text-white/70 transition-colors">
-        <ArrowLeft size={13} /> Back to Guests
-      </Link>
-
-      {/* Profile card */}
-      <div className="relative overflow-hidden rounded-2xl bg-white border border-slate-100 shadow-sm dark:bg-[#1a1d2e] dark:border-white/5 dark:shadow-xl">
-        <div className={`absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r ${grad}`} />
-        <div className="p-6 flex items-start gap-5">
-          <div className={`h-20 w-20 rounded-2xl bg-gradient-to-br ${grad} flex items-center justify-center text-2xl font-extrabold text-white shadow-2xl flex-none`}>
-            {guest.name.slice(0, 2).toUpperCase()}
-          </div>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">{guest.name}</h1>
-            <div className="flex items-center gap-1.5 mt-1">
-              <Mail size={12} className="text-slate-400 dark:text-white/30" />
-              <p className="text-sm text-slate-500 dark:text-white/40">{guest.email}</p>
+    <div className="bg-white dark:bg-[#0f1117] text-black dark:text-white min-h-[calc(100vh-64px)] flex flex-col">
+      
+      {/* ══ HEADER ═════════════════════════════════════════════════════ */}
+      <div className={`border-b ${DIVIDER} bg-white dark:bg-[#0a0c12]`}>
+        <div className="px-8 py-5">
+          <Link to="/app/guests" className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-black/40 hover:text-black dark:text-white/40 dark:hover:text-white transition-colors">
+            <ArrowLeft size={10} /> Back to Guests
+          </Link>
+        </div>
+        <div className={`px-8 py-8 border-t ${DIVIDER} flex flex-col md:flex-row items-start md:items-center justify-between gap-6`}>
+          <div className="flex items-start md:items-center gap-6">
+            <div className="h-24 w-24 flex items-center justify-center text-3xl font-extrabold bg-black/5 dark:bg-white/10 shrink-0">
+              {guest.name.slice(0, 2).toUpperCase()}
             </div>
-            {stage && (
-              <span className={`mt-2 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold bg-gradient-to-r ${GRADIENTS[stageIdx % GRADIENTS.length]} text-white shadow-md`}>
-                <Tag size={9} /> {stage.label}
-              </span>
-            )}
-            {guest.bio && <p className="mt-3 text-sm text-slate-600 dark:text-white/50 leading-relaxed max-w-lg">{guest.bio}</p>}
+            <div className="flex-1 min-w-0">
+              <h1 className="text-3xl font-extrabold tracking-tight leading-none mb-3">{guest.name}</h1>
+              <div className="flex items-center gap-2 mb-3">
+                <Mail size={12} className="text-black/30 dark:text-white/20" />
+                <p className="text-[11px] font-bold uppercase tracking-widest text-black/60 dark:text-white/50">{guest.email}</p>
+              </div>
+              {stage && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest bg-black/5 text-black/60 dark:bg-white/10 dark:text-white/60">
+                  <Tag size={8} /> {stage.label}
+                </span>
+              )}
+            </div>
           </div>
-          <div className="text-right shrink-0">
-            <p className="text-[10px] text-slate-400 dark:text-white/25 uppercase tracking-wider">Added</p>
-            <p className="text-xs font-semibold text-slate-600 dark:text-white/50 mt-0.5">
-              {new Date(guest.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+          <div className="md:text-right shrink-0">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-black/40 dark:text-white/30">Added</p>
+            <p className="text-sm font-bold mt-1">
+              {new Date(guest.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
             </p>
           </div>
         </div>
       </div>
 
-      {/* Notes */}
-      <div className="rounded-2xl bg-white border border-slate-100 shadow-sm dark:bg-[#1a1d2e] dark:border-white/5 dark:shadow-xl overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-white/5">
-          <div>
-            <h2 className="text-sm font-bold text-slate-800 dark:text-white/80">Notes</h2>
-            <p className="text-xs text-slate-400 dark:text-white/30 mt-0.5">{notes.length} notes for this guest</p>
+      {/* ══ CONTENT GRID ══════════════════════════════════════════════════ */}
+      <div className={`flex flex-col md:flex-row flex-1 divide-y md:divide-y-0 md:divide-x ${DIVIDER}`}>
+        
+        {/* Bio Section */}
+        <div className="flex-1">
+          <div className={`px-8 py-5 border-b ${DIVIDER}`}>
+            <h2 className="text-[11px] font-bold uppercase tracking-widest">Biography / Info</h2>
           </div>
-          <FileText size={14} className="text-slate-300 dark:text-white/25" />
+          <div className="p-8">
+            {guest.bio ? (
+              <p className="text-sm font-bold text-black/70 dark:text-white/70 leading-relaxed whitespace-pre-wrap">{guest.bio}</p>
+            ) : (
+              <p className="text-[10px] font-bold uppercase tracking-widest text-black/30 dark:text-white/30">No biography provided.</p>
+            )}
+          </div>
         </div>
-        <div className="px-6 py-4 border-b border-slate-100 dark:border-white/5">
-          <form onSubmit={handleAddNote} className="flex gap-3">
-            <input type="text" value={newNote} onChange={e => setNewNote(e.target.value)} placeholder="Add a note about this guest…"
-              className="flex-1 rounded-xl bg-slate-50 border border-slate-200 px-4 py-2.5 text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-200 dark:bg-white/5 dark:border-white/8 dark:text-white/70 dark:placeholder:text-white/25 dark:focus:ring-1 dark:focus:ring-violet-500/50" />
-            <button type="submit" disabled={saving || !newNote.trim()}
-              className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 px-4 py-2.5 text-xs font-bold text-white shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40 transition-all disabled:opacity-40">
-              <Send size={12} /> Add Note
-            </button>
-          </form>
-        </div>
-        <div className="p-6 space-y-3">
-          {notes.length === 0 ? (
-            <div className="flex flex-col items-center py-10 text-slate-300 dark:text-white/20">
-              <FileText size={28} className="mb-2" /><p className="text-xs">No notes yet — add one above</p>
+
+        {/* Notes Section */}
+        <div className="flex-1 flex flex-col min-w-0 bg-black/[0.02] dark:bg-white/[0.02]">
+          <div className={`px-8 py-5 border-b ${DIVIDER} flex items-center justify-between`}>
+            <div>
+              <h2 className="text-[11px] font-bold uppercase tracking-widest">Notes</h2>
+              <p className="text-[9px] font-bold uppercase tracking-widest text-black/30 dark:text-white/20 mt-1">{notes.length} notes recorded</p>
             </div>
-          ) : notes.map((n, i) => (
-            <div key={n.id} className="relative overflow-hidden rounded-xl bg-slate-50 border border-slate-100 p-4 dark:bg-white/4 dark:border-white/5">
-              <div className={`absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b ${GRADIENTS[i % GRADIENTS.length]} rounded-l-xl`} />
-              <p className="text-sm text-slate-700 dark:text-white/75 leading-relaxed pl-2">{n.body}</p>
-              <div className="flex items-center gap-1.5 mt-2 pl-2">
-                <Clock3 size={9} className="text-slate-400 dark:text-white/20" />
-                <span className="text-[10px] text-slate-400 dark:text-white/25">
-                  {new Date(n.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                </span>
+            <FileText size={14} className="text-black/20 dark:text-white/10" />
+          </div>
+          
+          <div className={`px-8 py-6 border-b ${DIVIDER}`}>
+            <form onSubmit={handleAddNote} className="flex flex-col sm:flex-row gap-4">
+              <input type="text" value={newNote} onChange={e => setNewNote(e.target.value)} placeholder="Add a note about this guest…"
+                className={`flex-1 px-4 py-3 border ${DIVIDER} bg-white dark:bg-[#0a0c12] text-xs font-bold placeholder:text-black/30 dark:placeholder:text-white/20 focus:outline-none focus:border-black dark:focus:border-white transition-colors`} />
+              <button type="submit" disabled={saving || !newNote.trim()}
+                className="flex items-center justify-center gap-2 border border-black dark:border-white bg-black dark:bg-white text-white dark:text-black px-6 py-3 text-[10px] font-bold uppercase tracking-widest hover:opacity-80 transition-opacity disabled:opacity-40">
+                <Send size={10} /> Add Note
+              </button>
+            </form>
+          </div>
+
+          <div className="flex-1 overflow-y-auto">
+            {notes.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-24 text-black/20 dark:text-white/15">
+                <FileText size={32} className="mb-4" />
+                <p className="text-[10px] font-bold uppercase tracking-widest">No notes yet</p>
               </div>
-            </div>
-          ))}
+            ) : (
+              <div className={`divide-y ${DIVIDER}`}>
+                {notes.map((n) => (
+                  <div key={n.id} className="relative p-8 group transition-colors hover:bg-black/[0.04] dark:hover:bg-white/[0.04]">
+                    <p className="text-sm font-bold text-black/90 dark:text-white/90 leading-relaxed mb-4">{n.body}</p>
+                    <div className="flex items-center gap-2">
+                      <Clock3 size={10} className="text-black/30 dark:text-white/20" />
+                      <span className="text-[9px] font-bold uppercase tracking-widest text-black/40 dark:text-white/30">
+                        {new Date(n.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
+
       </div>
     </div>
   );

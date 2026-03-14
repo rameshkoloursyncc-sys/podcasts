@@ -3,11 +3,12 @@ import { useAuth } from '../../context/AuthContext';
 import { getNotes } from '../../services/api';
 import { FileText, Mic2, Users, Clock3 } from 'lucide-react';
 
+const DIVIDER = 'border-black/[0.08] dark:border-white/[0.08] divide-black/[0.08] dark:divide-white/[0.08]';
+
 const TYPE_META = {
-  guest:   { gradient: 'from-violet-600 to-purple-700', icon: Users, badge: 'bg-violet-100 text-violet-700 border-violet-200 dark:bg-violet-500/15 dark:text-violet-300 dark:border-violet-500/20' },
-  episode: { gradient: 'from-blue-600 to-cyan-600',     icon: Mic2,  badge: 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/20' },
+  guest:   { icon: Users, badge: 'bg-black/5 text-black/60 dark:bg-white/10 dark:text-white/60' },
+  episode: { icon: Mic2,  badge: 'bg-black/5 text-black/60 dark:bg-white/10 dark:text-white/60' },
 };
-const CARD_ACCENTS = ['from-violet-600 to-purple-700','from-blue-600 to-cyan-600','from-pink-500 to-rose-600','from-emerald-500 to-teal-600','from-amber-500 to-orange-600','from-indigo-600 to-violet-700'];
 
 export default function Notes() {
   const { tenant } = useAuth();
@@ -23,73 +24,88 @@ export default function Notes() {
   const filtered = notes.filter(n => filter === 'all' || n.entityType === filter);
 
   if (loading) return (
-    <div className="flex items-center justify-center h-80">
-      <div className="h-10 w-10 rounded-full border-4 border-emerald-200 border-t-emerald-600 animate-spin dark:border-emerald-500/30 dark:border-t-emerald-500" />
+    <div className="flex items-center justify-center h-80 bg-white dark:bg-[#0f1117]">
+      <div className="flex flex-col items-center gap-3">
+        <div className="h-9 w-9 border-4 border-black/10 border-t-black animate-spin dark:border-white/10 dark:border-t-white" />
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-black/25 dark:text-white/20">Loading…</p>
+      </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#0f1117] p-6 space-y-6">
-      <div>
-        <div className="flex items-center gap-2 mb-1">
-          <FileText size={14} className="text-emerald-500 dark:text-emerald-400" />
-          <span className="text-xs font-semibold uppercase tracking-widest text-emerald-500 dark:text-emerald-400">Notes</span>
-        </div>
-        <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">All Notes</h1>
-        <p className="text-sm text-slate-400 dark:text-white/35 mt-0.5">{notes.length} notes across all entities</p>
-      </div>
-
-      {/* Filter cards */}
-      <div className="grid grid-cols-3 gap-4">
-        {[
-          { key: 'all',     label: 'All Notes',    count: notes.length,                                      gradient: 'from-slate-500 to-slate-600' },
-          { key: 'guest',   label: 'Guest Notes',  count: notes.filter(n => n.entityType === 'guest').length,   gradient: 'from-violet-600 to-purple-700' },
-          { key: 'episode', label: 'Episode Notes',count: notes.filter(n => n.entityType === 'episode').length,  gradient: 'from-blue-600 to-cyan-600' },
-        ].map(({ key, label, count, gradient }) => (
-          <button key={key} onClick={() => setFilter(key)}
-            className={`relative overflow-hidden rounded-2xl p-5 text-left shadow-lg transition-all hover:-translate-y-0.5 ${filter === key ? 'ring-2 ring-violet-400/50 dark:ring-white/25' : ''}`}>
-            <div className={`absolute inset-0 bg-gradient-to-br ${gradient}`} />
-            <div className="absolute -right-4 -top-4 h-20 w-20 rounded-full bg-white/10" />
-            <div className="relative z-10">
-              <FileText size={16} className="text-white/70 mb-2" />
-              <p className="text-2xl font-extrabold text-white">{count}</p>
-              <p className="text-xs text-white/60 mt-0.5">{label}</p>
+    <div className="bg-white dark:bg-[#0f1117] text-black dark:text-white min-h-[calc(100vh-64px)] flex flex-col">
+      
+      {/* ══ HEADER ═════════════════════════════════════════════════════ */}
+      <div className={`border-b ${DIVIDER} bg-white dark:bg-[#0a0c12]`}>
+        <div className="px-8 py-7 flex items-center justify-between gap-6">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <FileText size={12} className="text-emerald-500 dark:text-emerald-400" />
+              <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-500 dark:text-emerald-400">Notes</span>
             </div>
-          </button>
-        ))}
-      </div>
-
-      {/* Notes grid */}
-      {filtered.length === 0 ? (
-        <div className="rounded-2xl bg-white border border-slate-100 dark:bg-[#1a1d2e] dark:border-white/5 p-16 flex flex-col items-center text-slate-300 dark:text-white/20">
-          <FileText size={36} className="mb-3" /><p className="text-sm">No notes yet</p>
+            <h1 className="text-3xl font-extrabold tracking-tight leading-none">All Notes.</h1>
+            <p className="text-sm text-black/35 dark:text-white/30 mt-2">{notes.length} notes across all entities</p>
+          </div>
         </div>
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((n, i) => {
-            const meta = TYPE_META[n.entityType] ?? TYPE_META.guest;
-            const Icon = meta.icon;
+
+        {/* Filter strip */}
+        <div className={`grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x ${DIVIDER} border-t ${DIVIDER}`}>
+          {[
+            { key: 'all',     label: 'All Notes',    count: notes.length },
+            { key: 'guest',   label: 'Guest Notes',  count: notes.filter(n => n.entityType === 'guest').length },
+            { key: 'episode', label: 'Episode Notes',count: notes.filter(n => n.entityType === 'episode').length },
+          ].map(({ key, label, count }) => {
+            const active = filter === key;
             return (
-              <div key={n.id} className="relative overflow-hidden rounded-2xl bg-white border border-slate-100 p-5 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 dark:bg-[#1a1d2e] dark:border-white/5 dark:shadow-lg dark:hover:shadow-xl dark:hover:border-white/10">
-                <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${CARD_ACCENTS[i % CARD_ACCENTS.length]}`} />
-                <div className="flex items-start justify-between mb-3">
-                  <div className={`h-9 w-9 rounded-xl bg-gradient-to-br ${CARD_ACCENTS[i % CARD_ACCENTS.length]} flex items-center justify-center shadow-lg`}>
-                    <Icon size={14} className="text-white" />
-                  </div>
-                  <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold border capitalize ${meta.badge}`}>
-                    {n.entityType}
-                  </span>
-                </div>
-                <p className="text-sm text-slate-700 dark:text-white/80 leading-relaxed line-clamp-3">{n.body}</p>
-                <div className="mt-4 flex items-center gap-1.5 text-[10px] text-slate-400 dark:text-white/25">
-                  <Clock3 size={10} />
-                  {new Date(n.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                </div>
-              </div>
+              <button key={key} onClick={() => setFilter(key)}
+                className={`relative p-6 text-left group transition-colors ${active ? 'bg-black/[0.04] dark:bg-white/[0.04]' : 'hover:bg-black/[0.02] dark:hover:bg-white/[0.02]'}`}>
+                <div className={`absolute top-0 right-0 h-full w-1 transition-opacity ${active ? 'bg-black dark:bg-white opacity-100' : 'bg-transparent opacity-0 group-hover:bg-black/10 dark:group-hover:bg-white/10 group-hover:opacity-100'}`} />
+                <p className={`text-[10px] font-bold uppercase tracking-widest ${active ? 'text-black dark:text-white' : 'text-black/40 dark:text-white/30'}`}>{label}</p>
+                <p className="mt-2 text-3xl font-extrabold tracking-tight">{count}</p>
+              </button>
             );
           })}
         </div>
-      )}
+      </div>
+
+      {/* ══ CONTENT GRID ══════════════════════════════════════════════════ */}
+      <div className={`flex-1 border-b ${DIVIDER}`}>
+        {filtered.length === 0 ? (
+          <div className="py-24 flex flex-col items-center text-black/20 dark:text-white/15 select-none">
+            <FileText size={36} className="mb-3" />
+            <p className="text-xs font-bold uppercase tracking-widest">No notes yet</p>
+          </div>
+        ) : (
+          <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 divide-y sm:divide-y-0 ${DIVIDER}`}>
+            {filtered.map((n) => {
+              const meta = TYPE_META[n.entityType] ?? TYPE_META.guest;
+              const Icon = meta.icon;
+              return (
+                <div key={n.id} className={`relative p-6 border-b sm:border-r ${DIVIDER} hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors group`}>
+                  
+                  <div className="flex items-start justify-between mb-5">
+                    <div className="h-10 w-10 border border-dashed border-black/20 dark:border-white/20 flex items-center justify-center">
+                      <Icon size={16} className="text-black/50 dark:text-white/50" />
+                    </div>
+                    <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest ${meta.badge}`}>
+                      {n.entityType}
+                    </span>
+                  </div>
+                  
+                  <p className="text-sm font-bold text-black/90 dark:text-white/90 leading-relaxed line-clamp-4">{n.body}</p>
+                  
+                  <div className="mt-6 pt-4 border-t border-black/10 dark:border-white/10 flex items-center gap-2">
+                    <Clock3 size={10} className="text-black/30 dark:text-white/20" />
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-black/40 dark:text-white/30">
+                      {new Date(n.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
