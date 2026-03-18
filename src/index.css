@@ -1,5 +1,13 @@
-/* Add Tailwind v4 dark mode via class strategy */
 @import "tailwindcss";
+@import "./assets/Fonts/WEB/css/red-hat-display.css";
+
+@theme {
+  --font-sans: "RedHatDisplay-Variable", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+:root {
+  font-family: var(--font-sans);
+}
 
 @variant dark (&:where(.dark, .dark *));
 

@@ -13,7 +13,9 @@ function TestimonialSection() {
           <div className="border-b md:border-r border-white/20 p-8 hover:bg-zinc-900 transition duration-300">
             <div className="text-5xl mb-4">''</div>
             <p className="mb-6 text-gray-400">
-            Anytype is a safe haven for digital collaboration — a local-first, encrypted, offline-ready home for notes, chats, and lists you truly own. Built on peer-to-peer sync, it lets you work and collaborate without the cloud breathing down your neck.
+              “We stopped losing guests we actually wanted.” <br />
+              We had follow-ups slipping constantly. Now everything is tracked and owned.
+
             </p>
             <div className="flex items-center gap-3">
               <img src={Profile} alt="User" className="w-8 h-8 rounded-full" />
@@ -25,7 +27,9 @@ function TestimonialSection() {
           <div className="border-b md:border-r border-white/20 p-8 hover:bg-zinc-900 transition duration-300">
             <div className="text-5xl mb-4">''</div>
             <p className="mb-6 text-gray-400">
-              Anytype is a safe haven for digital collaboration — a local-first, encrypted, offline-ready home for notes, chats, and lists you truly own. Built on peer-to-peer sync, it lets you work and collaborate without the cloud breathing down your neck.
+              “Our team finally knows what’s happening.” <br />
+              No more asking around. The pipeline shows everything clearly.
+
             </p>
             <div className="flex items-center gap-3">
               <img src={Profile} alt="User" className="w-8 h-8 rounded-full" />
@@ -37,11 +41,9 @@ function TestimonialSection() {
           <div className="md:row-span-2 border-b md:border-b-0 border-white/20 p-8 hover:bg-zinc-900 transition duration-300">
             <div className="text-5xl mb-4">''</div>
             <p className="mb-6 text-gray-400">
-             Anytype is a safe haven for digital collaboration — a local-first, encrypted, offline-ready home for notes, chats, and lists you truly own. Built on peer-to-peer sync, it lets you work and collaborate without the cloud breathing down your neck.
-               Anytype is a safe haven for digital collaboration — a local-first, encrypted, offline-ready home for notes, chats, and lists you truly own. Built on peer-to-peer sync, it lets you work and collaborate without the cloud breathing down your neck.
-              Anytype is a safe haven for digital collaboration — a local-first, encrypted, offline-ready home for notes, chats, and lists you truly own. Built on peer-to-peer sync, it lets you work and collaborate without the cloud breathing down your neck.
-                Anytype is a safe haven for digital collaboration — a local-first, encrypted, offline-ready home for notes, chats, and lists you truly own. Built on peer-to-peer sync, it lets you work and collaborate without the cloud breathing down your neck.
-              Anytype is a safe haven for digital collaboration — a local-first, encrypted, offline-ready home for notes, chats, and lists you truly own. Built on peer-to-peer sync, it lets you work and collaborate without the cloud breathing down your neck.
+              “We filled our calendar without chasing people last minute.” <br />
+              Before this, booking felt chaotic. Now it’s predictable.
+
             </p>
             <div className="flex items-center gap-3">
               <img src={Profile} alt="User" className="w-8 h-8 rounded-full" />
@@ -53,8 +55,10 @@ function TestimonialSection() {
           <div className="border-b md:border-r border-white/20 p-8 hover:bg-zinc-900 transition duration-300">
             <div className="text-5xl mb-4">''</div>
             <p className="mb-6 text-gray-400">
-             Anytype is a safe haven for digital collaboration — a local-first, encrypted, offline-ready home for notes, chats, and lists you truly own. Built on peer-to-peer sync, it lets you work and collaborate without the cloud breathing down your neck.
-             
+              “No more duplicate outreach disasters.” <br />
+              That alone made this worth it.
+
+
             </p>
             <div className="flex items-center gap-3">
               <img src={Profile} alt="User" className="w-8 h-8 rounded-full" />
@@ -66,8 +70,11 @@ function TestimonialSection() {
           <div className="border-b md:border-r border-white/20 p-8 hover:bg-zinc-900 transition duration-300">
             <div className="text-5xl mb-4">''</div>
             <p className="mb-6 text-gray-400">
-              Anytype is a safe haven for digital collaboration — a local-first, encrypted, offline-ready home for notes, chats, and lists you truly own. Built on peer-to-peer sync, it lets you work and collaborate without the cloud breathing down your neck.
-            
+              “Simple system, massive difference.” <br />
+              We didn’t need more tools. We needed clarity.
+
+
+
             </p>
             <div className="flex items-center gap-3">
               <img src={Profile} alt="User" className="w-8 h-8 rounded-full" />

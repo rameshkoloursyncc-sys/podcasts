@@ -9,22 +9,22 @@ function ComposeSection() {
   const [activeTab, setActiveTab] = useState("Table");
 
   const tabImages = {
-    Table: BlockOne,
-    Kanban: BlockTwo,
-    Gallery: BlockThree,
+    "Pipeline View": BlockOne,
+    "Calendar View": BlockTwo,
+    "List View": BlockThree,
   };
 
   return (
     <div
       className="dark px-4 py-20 bg-black text-white "
-     
+
     >
       <div className="mx-auto border border-white/20">
 
         {/* ================= TITLE ================= */}
         <div className="border-b border-white/20 p-12 text-center">
-          <h2 className="text-6xl md:text-7xl lg:text-8xl leading-tight">
-            Compose beautifully
+          <h2 className="text-3xl md:text-4xl lg:text-5xl leading-tight">
+            Run a structured pipeline without overcomplicating it
           </h2>
         </div>
 
@@ -43,31 +43,38 @@ function ComposeSection() {
           {/* RIGHT */}
           <div className="p-12 flex items-center col-span-2 justify-center text-center min-h-[420px]">
             <h3 className="text-4xl font-semibold leading-snug">
-              Powerful, no-code creation:
+              Track guests, manage follow-ups
               <br />
-              Compose anything you can
+              and move conversations forward
               <br />
-              imagine visually
+              without juggling tools.
             </h3>
           </div>
         </div>
 
         {/* ================= ROW 2 (3 COL) ================= */}
         <div className="grid grid-cols-1 md:grid-cols-3 border-b border-white/20">
-
-          {[1, 2, 3].map((item, index) => (
+          {[
+            { title: "Structured", desc: "Guest stages that reflect how booking actually works", img: BlockOne },
+            { title: "Flexible", desc: "Adapt the pipeline to your outreach style", img: BlockTwo },
+            { title: "Visible", desc: "Every guest, every stage, always clear", img: BlockThree }
+          ].map((item, index) => (
             <div
               key={index}
               className={`p-12 flex flex-col items-center justify-center text-center min-h-[420px]
               ${index !== 2 ? "md:border-r border-white/20" : ""}`}
             >
-              <p className="text-lg mb-6 max-w-xs">
-                Structured
+              <p className="text-2xl mb-6 max-w-xs">
+                {item.title}
+                <br />
+                <span className="text-sm text-white/40 font-normal">
+                  {item.desc}
+                </span>
               </p>
               <img
-                src={BlockOne}
-                alt="Block"
-                className="w-56 mt-4"
+                src={item.img}
+                alt={item.title}
+                className="w-56 mt-4 grayscale hover:grayscale-0 transition-all duration-500"
               />
             </div>
           ))}
@@ -77,24 +84,20 @@ function ComposeSection() {
         <div className="p-16 text-center border-b border-white/20">
 
           <h3 className="text-5xl md:text-6xl leading-tight mb-8">
-            Single objects, infinite possibilities
-            <br />
-            Visualise connections using graph &
-            <br />
-            database views
+            One pipeline. Multiple ways to see it.
+
           </h3>
 
           {/* ===== TAB BAR ===== */}
           <div className="flex justify-center gap-12 mb-12">
-            {["Table", "Kanban", "Gallery"].map((tab) => (
+            {["Pipeline View", "Calendar View", "List View"].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`text-xl pb-2 border-b-2 transition-all duration-300
-                  ${
-                    activeTab === tab
-                      ? "border-white/20 font-semibold"
-                      : "border-transparent opacity-60"
+                  ${activeTab === tab
+                    ? "border-white/20 font-semibold"
+                    : "border-transparent opacity-60"
                   }`}
               >
                 {tab}
