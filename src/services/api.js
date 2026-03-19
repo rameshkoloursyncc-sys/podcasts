@@ -225,3 +225,22 @@ export function deleteNote(id) {
   setSlice('notes', notes);
   return Promise.resolve();
 }
+
+
+export function sendMail(tenantId, payload) {
+  const mails = getSlice('mail');
+  const id = `mail-${Date.now()}`;
+  const now = new Date().toISOString();
+  const mail = {
+    id,
+    tenantId,
+    entityType: payload.entityType ?? 'guest',
+    entityId: payload.entityId ?? '',
+    authorId: payload.authorId ?? null,
+    body: payload.body ?? '',
+    createdAt: now,
+  };
+  setSlice('mail', [...mails, mail]);
+  return Promise.resolve(mail);
+}
+
