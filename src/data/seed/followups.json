@@ -1,0 +1,67 @@
+[
+  {
+    "id": "__SEED_1__",
+    "guest_name": "Kunal Shah",
+    "guest_email": "kunal@example.com",
+    "subject": "Follow-up — The Founders Pod × Kunal Shah",
+    "body": "<p>Hi <strong>Kunal</strong>,</p><p>Just wanted to touch base ahead of our recording session scheduled for <strong>Tuesday, 25 March at 11:00 AM IST</strong>.</p><p>Please let us know if you have any questions or would like to share talking points beforehand.</p><p>Looking forward to it!</p><p>Best,<br /><strong>The Founders Pod</strong></p>",
+    "status": "sent",
+    "sent_at": "__NOW_MINUS_2D__",
+    "created_at": "__NOW_MINUS_2D__",
+    "opened": true,
+    "reply_count": 1,
+    "tags": ["booking-reminder"]
+  },
+  {
+    "id": "__SEED_2__",
+    "guest_name": "Adora Svitak",
+    "guest_email": "adora@example.com",
+    "subject": "Reminder: Recording this Friday — The Founders Pod",
+    "body": "<p>Hi <strong>Adora</strong>,</p><p>Just a friendly reminder that we're recording <em>this Friday at 2:00 PM IST</em>. We've reserved the studio — please confirm you're all set!</p><p>Best,<br /><strong>The Founders Pod</strong></p>",
+    "status": "sent",
+    "sent_at": "__NOW_MINUS_5D__",
+    "created_at": "__NOW_MINUS_5D__",
+    "opened": false,
+    "reply_count": 0,
+    "tags": ["reminder"]
+  },
+  {
+    "id": "__SEED_3__",
+    "guest_name": "Priya Shankar",
+    "guest_email": "priya@example.com",
+    "subject": "Episode topic confirmation — Startup Journey",
+    "body": "<p>Hi <strong>Priya</strong>,</p><p>We're really excited to have you on <strong>The Founders Pod</strong>!</p><p>To make the most of our time together, could you share:</p><ul><li>A short bio (2–3 lines)</li><li>Key milestones you'd like to highlight</li><li>Any topics you'd prefer to avoid</li></ul><p>Looking forward to a great conversation.</p><p>Best,<br /><strong>The Founders Pod</strong></p>",
+    "status": "sent",
+    "sent_at": "__NOW_MINUS_8D__",
+    "created_at": "__NOW_MINUS_8D__",
+    "opened": true,
+    "reply_count": 2,
+    "tags": ["pre-show", "topic-brief"]
+  },
+  {
+    "id": "__SEED_4__",
+    "guest_name": "Rahul Mehta",
+    "guest_email": "rahul@example.com",
+    "subject": "Follow-up — The Founders Pod × Rahul Mehta",
+    "body": "<p>Hi <strong>Rahul</strong>,</p><p>We'd love to lock in a recording date soon — please reply with your availability and we'll get something scheduled.</p><p>Best,<br /><strong>The Founders Pod</strong></p>",
+    "status": "draft",
+    "sent_at": null,
+    "created_at": "__NOW_MINUS_1D__",
+    "opened": false,
+    "reply_count": 0,
+    "tags": []
+  },
+  {
+    "id": "__SEED_5__",
+    "guest_name": "Sanya Malhotra",
+    "guest_email": "sanya@example.com",
+    "subject": "Second touch — The Founders Pod",
+    "body": "<p>Hi <strong>Sanya</strong>,</p><p>Just circling back on my last message — I know things get busy! We'd still love to have you on the show. Let me know if a different format (shorter session, video call first) might work better.</p><p>Best,<br /><strong>The Founders Pod</strong></p>",
+    "status": "draft",
+    "sent_at": null,
+    "created_at": "__NOW_MINUS_1H__",
+    "opened": false,
+    "reply_count": 0,
+    "tags": ["second-touch"]
+  }
+]

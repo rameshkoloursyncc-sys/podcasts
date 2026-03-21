@@ -19,9 +19,13 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-// ─── Local Storage Key ───────────────────────────────────────────────────────
+import followupsSeed from '../data/seed/followups.json';
+import smtpSeed     from '../data/seed/smtp_config.json';
+
+// ─── Local Storage Keys ───────────────────────────────────────────────────────
 const FOLLOWUPS_KEY = 'pgfm_followups';
 const SMTP_KEY      = 'pgfm_smtp_config';
+const SEED_VERSION  = 'pgfm_seed_v2';   // bump this string to force a re-seed
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 function readFollowups() {
@@ -41,30 +45,81 @@ function uuid() {
 }
 
 // ─── Seed Demo Data (first run only) ─────────────────────────────────────────
+//
+// ══════════════════════════════════════════════════════════════════════════════
+//  FOLLOW-UP RECORD — Full JSON shape (what the real API will return)
+// ══════════════════════════════════════════════════════════════════════════════
+// {
+//   id:           "uuid-string",           // unique record ID
+//   guest_name:   "Kunal Shah",            // display name of the recipient
+//   guest_email:  "kunal@example.com",     // TO address
+//   subject:      "Follow-up — Founders Pod × Kunal Shah",
+//   body:         "<p>HTML rich content…</p>",  // Tiptap HTML output
+//   status:       "sent" | "draft",        // current state
+//   sent_at:      "2026-03-19T08:30:00Z" | null,  // ISO 8601, null if draft
+//   created_at:   "2026-03-19T08:29:55Z", // when the record was created
+//   opened:       true | false,            // email open tracking (future)
+//   reply_count:  0,                       // number of replies received (future)
+//   tags:         ["reminder", "booking"], // optional classification tags (future)
+// }
+//
+// ══════════════════════════════════════════════════════════════════════════════
+//  SMTP CONFIG — Full JSON shape (what the real API will return/accept)
+// ══════════════════════════════════════════════════════════════════════════════
+// {
+//   host:         "smtp.gmail.com",        // SMTP server hostname
+//   port:         587,                     // port number (587=TLS, 465=SSL, 25=plain)
+//   encryption:   "tls" | "ssl" | "none", // transport security
+//   username:     "you@gmail.com",         // SMTP auth username
+//   password:     "app-password-here",     // SMTP auth password / app key (never log this)
+//   from_name:    "The Founders Pod",      // displayed sender name
+//   from_email:   "hello@founderspod.com", // reply-to / from address
+// }
+// ══════════════════════════════════════════════════════════════════════════════
+
 function seedIfEmpty() {
-  const existing = readFollowups();
-  if (existing.length > 0) return;
-  const demo = [
-    {
-      id: uuid(), guest_name: 'Kunal Shah', guest_email: 'kunal@example.com',
-      subject: 'Quick follow-up — The Founders Pod',
-      body: '<p>Hi Kunal, just wanted to touch base about the upcoming episode. Looking forward to it!</p>',
-      status: 'sent', sent_at: new Date(Date.now() - 2 * 86400000).toISOString(), opened: true,
-    },
-    {
-      id: uuid(), guest_name: 'Adora Svitak', guest_email: 'adora@example.com',
-      subject: 'Reminder: Recording this Friday',
-      body: '<p>Hi Adora, just a reminder that we\'re recording this Friday at 2 PM IST. Please confirm!</p>',
-      status: 'sent', sent_at: new Date(Date.now() - 5 * 86400000).toISOString(), opened: false,
-    },
-    {
-      id: uuid(), guest_name: 'Priya Shankar', guest_email: 'priya@example.com',
-      subject: 'Episode topic confirmation',
-      body: '<p>Hi Priya, looking forward to discussing your startup journey on the show!</p>',
-      status: 'draft', sent_at: null, opened: false,
-    },
-  ];
-  writeFollowups(demo);
+  // If SEED_VERSION key is already set, data is fresh — nothing to do.
+  if (localStorage.getItem(SEED_VERSION)) return;
+
+  // Wipe any stale old data and mark this version as seeded.
+  localStorage.removeItem(FOLLOWUPS_KEY);
+  localStorage.removeItem(SMTP_KEY);
+  localStorage.setItem(SEED_VERSION, '1');
+
+  // ── Resolve timestamp placeholders in followups.json ─────────────────────
+  // JSON can't contain dynamic values so we use placeholder strings that we
+  // replace here at runtime so timestamps are always relative to "now".
+  const now = Date.now();
+  const OFFSET_MAP = {
+    '__NOW_MINUS_8D__': new Date(now - 8 * 86400000).toISOString(),
+    '__NOW_MINUS_5D__': new Date(now - 5 * 86400000).toISOString(),
+    '__NOW_MINUS_2D__': new Date(now - 2 * 86400000).toISOString(),
+    '__NOW_MINUS_1D__': new Date(now - 1 * 86400000).toISOString(),
+    '__NOW_MINUS_1H__': new Date(now - 3600000).toISOString(),
+    '__SEED_1__': uuid(),
+    '__SEED_2__': uuid(),
+    '__SEED_3__': uuid(),
+    '__SEED_4__': uuid(),
+    '__SEED_5__': uuid(),
+  };
+
+  function resolveDates(obj) {
+    // Deep-clone via JSON round-trip, then replace all placeholder strings
+    return JSON.parse(
+      JSON.stringify(obj).replace(
+        /__NOW_MINUS_\dD?H?__|__SEED_\d__/g,
+        match => OFFSET_MAP[match] ?? match,
+      )
+    );
+  }
+
+  // ── Write follow-ups from JSON seed file ──────────────────────────────────
+  writeFollowups(resolveDates(followupsSeed));
+
+  // ── Write SMTP config from JSON seed file ─────────────────────────────────
+  // Strip the _comment and _providers documentation keys before storing.
+  const { _comment: _c, _providers: _p, ...smtpDefaults } = smtpSeed;
+  writeSmtp(smtpDefaults);
 }
 seedIfEmpty();
 

@@ -1,0 +1,45 @@
+{
+  "_comment": "SMTP configuration seed — shape mirrors POST /api/smtp-config payload. Fill in real credentials before use.",
+  "host": "",
+  "port": "587",
+  "encryption": "tls",
+  "username": "",
+  "password": "",
+  "from_name": "",
+  "from_email": "",
+
+  "_providers": {
+    "_comment": "Copy the values below into the fields above for your provider",
+    "gmail": {
+      "host": "smtp.gmail.com",
+      "port": "587",
+      "encryption": "tls",
+      "note": "Use an App Password, not your Gmail password. Enable 2FA first."
+    },
+    "sendgrid": {
+      "host": "smtp.sendgrid.net",
+      "port": "587",
+      "encryption": "tls",
+      "username": "apikey",
+      "note": "Set password to your SendGrid API key."
+    },
+    "postmark": {
+      "host": "smtp.postmarkapp.com",
+      "port": "587",
+      "encryption": "tls",
+      "note": "Use your Postmark Server API Token as both username and password."
+    },
+    "mailgun": {
+      "host": "smtp.mailgun.org",
+      "port": "587",
+      "encryption": "tls",
+      "note": "Username is your Mailgun SMTP login, password is your SMTP password from Mailgun domain settings."
+    },
+    "ses": {
+      "host": "email-smtp.<region>.amazonaws.com",
+      "port": "587",
+      "encryption": "tls",
+      "note": "Generate SMTP credentials from IAM in the SES Console."
+    }
+  }
+}
