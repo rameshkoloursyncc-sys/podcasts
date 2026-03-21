@@ -8,24 +8,25 @@ const SECTION_CARDS = [
     icon: Building2, title: 'Workspace',
     fields: (tenant) => [
       { label: 'Podcast Name', value: tenant?.name ?? '—' },
-      { label: 'Slug',         value: tenant?.slug ?? '—' },
-      { label: 'Tenant ID',    value: tenant?.id ?? '—' },
+      { label: 'Slug', value: tenant?.slug ?? '—' },
+      // { label: 'Tenant ID', value: tenant?.id ?? '—' },
     ],
   },
   {
     icon: User, title: 'Account',
     fields: (_, user) => [
-      { label: 'Display Name', value: user?.displayName ?? '—' },
-      { label: 'Email',        value: user?.email ?? '—' },
-      { label: 'Role',         value: user?.role ?? 'admin' },
+      // API returns snake_case (display_name); AuthContext also sets displayName alias
+      { label: 'Display Name', value: user?.display_name ?? user?.displayName ?? '—' },
+      { label: 'Email', value: user?.email ?? '—' },
+      { label: 'Role', value: user?.role ?? '—' },
     ],
   },
 ];
 
 const QUICK_SETTINGS = [
-  { icon: Bell,    label: 'Notifications', sub: 'Email & in-app alerts' },
-  { icon: Shield,  label: 'Security',      sub: 'Password & 2FA' },
-  { icon: Palette, label: 'Appearance',    sub: 'Theme & display options' },
+  { icon: Bell, label: 'Notifications', sub: 'Email & in-app alerts' },
+  { icon: Shield, label: 'Security', sub: 'Password & 2FA' },
+  { icon: Palette, label: 'Appearance', sub: 'Theme & display options' },
 ];
 
 export default function SettingsPage() {
@@ -36,10 +37,10 @@ export default function SettingsPage() {
       {/* ══ HEADER ═════════════════════════════════════════════════════ */}
       <div className={`border-b ${DIVIDER} bg-white dark:bg-[#0a0c12]`}>
         <div className="px-8 py-7">
-          <div className="flex items-center gap-2 mb-2">
+          {/* <div className="flex items-center gap-2 mb-2">
             <Settings size={12} className="text-black/40 dark:text-white/40" />
             <span className="text-[10px] font-bold uppercase tracking-widest text-black/50 dark:text-white/40">Configuration</span>
-          </div>
+          </div> */}
           <h1 className="text-3xl font-extrabold tracking-tight leading-none">Settings.</h1>
           <p className="text-sm text-black/35 dark:text-white/30 mt-2">Manage your workspace and account operations</p>
         </div>
@@ -47,10 +48,10 @@ export default function SettingsPage() {
 
       {/* ══ CONTENT GRID ══════════════════════════════════════════════════ */}
       <div className={`flex flex-1 divide-x ${DIVIDER}`}>
-        
+
         {/* Main Settings Column */}
         <div className="flex-1 flex flex-col">
-          
+
           <div className={`grid md:grid-cols-2 divide-y md:divide-y-0 md:divide-x ${DIVIDER} border-b ${DIVIDER}`}>
             {SECTION_CARDS.map(({ icon: Icon, title, fields }) => (
               <div key={title} className="flex flex-col">

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { getNotes, createNote, deleteNote } from '../../services/api';
+import { getGuests, getEpisodes, getBookings, getNotes, createNote, deleteNote } from '../../services/api';
 import { FileText, ArrowLeft, Plus, Trash2, X, Send, Clock3 } from 'lucide-react';
 
 const DIVIDER = 'border-black/[0.08] dark:border-white/[0.08] divide-black/[0.08] dark:divide-white/[0.08]';
@@ -11,35 +11,63 @@ const LABEL   = 'block text-[10px] font-bold uppercase tracking-widest text-blac
 const BTN_PRIMARY = 'flex items-center gap-2 border border-black dark:border-white bg-black dark:bg-white text-white dark:text-black px-5 py-2.5 text-xs font-bold hover:opacity-80 transition-opacity disabled:opacity-50';
 const BTN_GHOST   = `flex items-center gap-2 border ${DIVIDER} px-5 py-2.5 text-xs font-bold text-black/60 dark:text-white/60 hover:border-black dark:hover:border-white hover:text-black dark:hover:text-white transition-all`;
 
+// API note types: guest | episode | booking
 const TYPE_BADGE = {
   guest:   'bg-black/5 text-black/60 dark:bg-white/10 dark:text-white/60',
   episode: 'bg-black/5 text-black/60 dark:bg-white/10 dark:text-white/60',
+  booking: 'bg-black/5 text-black/60 dark:bg-white/10 dark:text-white/60',
 };
 
 export default function AdminNotes() {
   const { tenant, user } = useAuth();
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [form, setForm] = useState({ entityType: 'guest', entityId: '', body: '' });
+  const [form, setForm] = useState({ entity_type: 'guest', entity_id: '', body: '' });
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  function load() {
-    if (!tenant?.id) return;
-    getNotes(tenant.id).then(setNotes).finally(() => setLoading(false));
+  /**
+   * The API requires entity_type + entity_id for GET /api/notes.
+   * There is no "get all notes" endpoint.
+   * Strategy: fetch first page of guests/episodes/bookings, then batch-fetch their notes.
+   */
+  async function fetchAllNotes() {
+    const [guests, episodes, bookings] = await Promise.all([
+      getGuests({ per_page: 50 }),
+      getEpisodes({ per_page: 50 }),
+      getBookings({ per_page: 50 }),
+    ]);
+    const targets = [
+      ...guests.map(g => ({ entity_type: 'guest',   entity_id: g.id })),
+      ...episodes.map(e => ({ entity_type: 'episode', entity_id: e.id })),
+      ...bookings.map(b => ({ entity_type: 'booking', entity_id: b.id })),
+    ];
+    const CHUNK = 10;
+    const all = [];
+    for (let i = 0; i < targets.length; i += CHUNK) {
+      const chunk = targets.slice(i, i + CHUNK);
+      const results = await Promise.allSettled(chunk.map(t => getNotes(t.entity_type, t.entity_id)));
+      results.forEach(r => { if (r.status === 'fulfilled') all.push(...r.value); });
+    }
+    return all.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
   }
-  useEffect(() => { load(); }, [tenant?.id]);
+
+  function load() {
+    setLoading(true);
+    fetchAllNotes().then(list => setNotes(list)).catch(console.error).finally(() => setLoading(false));
+  }
+  useEffect(() => { load(); }, []);
 
   async function handleAdd(e) {
     e.preventDefault();
-    if (!form.body.trim() || !tenant?.id || !user?.id) return;
+    if (!form.body.trim()) return;
     setSaving(true);
     try {
-      await createNote(tenant.id, { entityType: form.entityType, entityId: form.entityId.trim(), authorId: user.id, body: form.body.trim() });
-      setForm({ entityType: 'guest', entityId: '', body: '' });
+      await createNote({ entity_type: form.entity_type, entity_id: form.entity_id.trim(), body: form.body.trim() });
+      setForm({ entity_type: 'guest', entity_id: '', body: '' });
       setShowForm(false);
       load();
-    } finally { setSaving(false); }
+    } catch (err) { console.error(err); } finally { setSaving(false); }
   }
 
   async function handleDelete(id) {
@@ -85,14 +113,15 @@ export default function AdminNotes() {
               <form onSubmit={handleAdd} className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className={LABEL}>Entity Type</label>
-                  <select value={form.entityType} onChange={e => setForm(f => ({ ...f, entityType: e.target.value }))} className={INPUT}>
-                    <option value="guest" className="bg-white dark:bg-black">Guest</option>
+                  <select value={form.entity_type} onChange={e => setForm(f => ({ ...f, entity_type: e.target.value }))} className={INPUT}>
+                    <option value="guest"   className="bg-white dark:bg-black">Guest</option>
                     <option value="episode" className="bg-white dark:bg-black">Episode</option>
+                    <option value="booking" className="bg-white dark:bg-black">Booking</option>
                   </select>
                 </div>
                 <div>
                   <label className={LABEL}>Entity ID</label>
-                  <input type="text" placeholder="e.g. guest-123" value={form.entityId} onChange={e => setForm(f => ({ ...f, entityId: e.target.value }))} className={INPUT} />
+                  <input type="text" placeholder="UUID of the guest, episode, or booking" value={form.entity_id} onChange={e => setForm(f => ({ ...f, entity_id: e.target.value }))} className={INPUT} />
                 </div>
                 <div className="md:col-span-2">
                   <label className={LABEL}>Note Body *</label>
@@ -118,18 +147,19 @@ export default function AdminNotes() {
                 {notes.map((n, i) => (
                   <div key={n.id} className={`p-6 relative overflow-hidden bg-white dark:bg-[#0f1117] hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors border-b md:border-b-0 ${DIVIDER}`}>
                     <div className="flex items-start justify-between mb-4">
-                      <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${TYPE_BADGE[n.entityType] ?? 'bg-black/5 text-black/60 dark:bg-white/10 dark:text-white/60'}`}>
-                        {n.entityType}
+                      {/* API returns snake_case: entity_type, entity_id, created_at */}
+                      <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${TYPE_BADGE[n.entity_type] ?? 'bg-black/5 text-black/60 dark:bg-white/10 dark:text-white/60'}`}>
+                        {n.entity_type}
                       </span>
                       <button onClick={() => handleDelete(n.id)} className="text-black/30 hover:text-red-500 dark:text-white/20 dark:hover:text-red-400 transition-colors">
                         <Trash2 size={13} />
                       </button>
                     </div>
                     <p className="text-sm font-medium text-black/80 dark:text-white/80 leading-relaxed min-h-[40px]">{n.body}</p>
-                    {n.entityId && <p className="mt-4 text-[10px] font-mono text-black/40 dark:text-white/30 truncate">{n.entityId}</p>}
+                    {n.entity_id && <p className="mt-4 text-[10px] font-mono text-black/40 dark:text-white/30 truncate">{n.entity_id}</p>}
                     <div className="mt-3 flex items-center gap-1.5 text-[10px] uppercase font-bold text-black/30 dark:text-white/25">
                       <Clock3 size={10} />
-                      {new Date(n.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      {n.created_at ? new Date(n.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}
                     </div>
                   </div>
                 ))}

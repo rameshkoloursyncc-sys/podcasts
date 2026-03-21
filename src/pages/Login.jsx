@@ -5,32 +5,33 @@ import { useTheme } from '../context/ThemeContext';
 import { Sparkles, Sun, Moon, ArrowRight, Radio, Users, Mic2, CalendarDays } from 'lucide-react';
 
 const FEATURE_GRID = [
-  { icon: Users,       label: 'Guest CRM',     desc: 'Manage podcast guests with pipeline stages and outreach tracking.' },
-  { icon: Mic2,        label: 'Episodes',       desc: 'Track recording status from draft to published in one place.' },
-  { icon: CalendarDays,label: 'Bookings',       desc: 'Schedule recording sessions and manage your calendar with ease.' },
-  { icon: Radio,       label: 'Publish Ready',  desc: 'Move from guest outreach to published episode — all in one workflow.' },
+  { icon: Users, label: 'Guest CRM', desc: 'Manage podcast guests with pipeline stages and outreach tracking.' },
+  { icon: Mic2, label: 'Episodes', desc: 'Track recording status from draft to published in one place.' },
+  { icon: CalendarDays, label: 'Bookings', desc: 'Schedule recording sessions and manage your calendar with ease.' },
+  { icon: Radio, label: 'Publish Ready', desc: 'Move from guest outreach to published episode — all in one workflow.' },
 ];
 
 export default function Login() {
-  const [userId, setUserId]   = useState('user-1');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError]     = useState('');
-  const { login }             = useAuth();
-  const { isDark, toggle }    = useTheme();
-  const navigate              = useNavigate();
-  const location              = useLocation();
-  const from                  = location.state?.from?.pathname ?? '/app';
+  const [error, setError] = useState('');
+  const { login } = useAuth();
+  const { isDark, toggle } = useTheme();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from?.pathname ?? '/app';
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      const ok = await login(userId);
+      const ok = await login(email, password);
       if (ok) navigate(from, { replace: true });
-      else setError('User not found. Try user-1');
-    } catch (_) {
-      setError('Login failed. Please try again.');
+      else setError('Invalid credentials. Please try again.');
+    } catch (err) {
+      setError(err?.message ?? 'Login failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -71,20 +72,37 @@ export default function Login() {
                 Welcome<br />back.
               </h1>
               <p className="mt-3 text-sm text-black/50 dark:text-white/40 leading-relaxed">
-                Enter your user ID to access your<br />podcast management dashboard.
+                Sign in to access your podcast management dashboard.
               </p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-[10px] font-bold uppercase tracking-widest text-black/40 dark:text-white/30 mb-2">
-                  User ID
+                  Email
                 </label>
                 <input
-                  type="text"
-                  value={userId}
-                  onChange={e => setUserId(e.target.value)}
-                  placeholder="user-1"
+                  type="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  required
+                  autoComplete="email"
+                  className="w-full border border-black/20 dark:border-white/20 bg-transparent px-4 py-3 text-sm text-black dark:text-white placeholder:text-black/30 dark:placeholder:text-white/25 focus:outline-none focus:border-black dark:focus:border-white transition-colors"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-black/40 dark:text-white/30 mb-2">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  autoComplete="current-password"
                   className="w-full border border-black/20 dark:border-white/20 bg-transparent px-4 py-3 text-sm text-black dark:text-white placeholder:text-black/30 dark:placeholder:text-white/25 focus:outline-none focus:border-black dark:focus:border-white transition-colors"
                 />
               </div>
@@ -100,20 +118,12 @@ export default function Login() {
                 <span>{loading ? 'Signing in…' : 'Sign in'}</span>
                 <ArrowRight size={15} className="group-hover:translate-x-1 transition-transform" />
               </button>
-            </form>
 
-            {/* Hint */}
-            <div className="mt-6 border border-black/10 dark:border-white/10 p-4">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-black/40 dark:text-white/30 mb-2">Demo Access</p>
-              <div className="flex flex-wrap gap-2">
-                {['user-1', 'user-2'].map(id => (
-                  <button key={id} onClick={() => setUserId(id)}
-                    className="rounded-none border border-black/20 dark:border-white/20 px-3 py-1 text-xs font-mono font-semibold text-black/60 dark:text-white/50 hover:border-black dark:hover:border-white hover:text-black dark:hover:text-white transition-all">
-                    {id}
-                  </button>
-                ))}
-              </div>
-            </div>
+              <p className="text-center text-[10px] font-bold uppercase tracking-widest text-black/30 dark:text-white/25">
+                No account?{' '}
+                <Link to="/register" className="text-black dark:text-white underline">Create one free</Link>
+              </p>
+            </form>
           </div>
         </div>
 
@@ -126,7 +136,6 @@ export default function Login() {
                 ${i === 1 ? 'border-b border-black dark:border-white/20' : ''}
                 ${i === 2 ? 'border-r border-black dark:border-white/20' : ''}
               `}>
-              {/* Grid number */}
               <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-black/20 dark:text-white/15 mb-auto">0{i + 1}</span>
               <div className="mt-auto">
                 <div className="h-10 w-10 border border-black/20 dark:border-white/20 flex items-center justify-center mb-5">
@@ -156,3 +165,4 @@ export default function Login() {
     </div>
   );
 }
+

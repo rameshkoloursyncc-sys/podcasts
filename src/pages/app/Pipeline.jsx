@@ -6,8 +6,6 @@ import { GitBranch, Users, ArrowRight } from 'lucide-react';
 
 const DIVIDER = 'border-black/[0.08] dark:border-white/[0.08] divide-black/[0.08] dark:divide-white/[0.08]';
 
-// No column styling needed for B&W
-
 export default function Pipeline() {
   const { tenant } = useAuth();
   const [guests, setGuests] = useState([]);
@@ -15,15 +13,17 @@ export default function Pipeline() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!tenant?.id) return;
-    Promise.all([getGuests(tenant.id), getPipelineStages(tenant.id)]).then(([g, s]) => {
-      setGuests(g);
-      setStages(s.sort((a, b) => a.order - b.order));
-    }).finally(() => setLoading(false));
-  }, [tenant?.id]);
+    // No tenantId needed — multi-tenancy is handled server-side via token
+    Promise.all([getGuests(), getPipelineStages()]).then(([g, s]) => {
+      setGuests(Array.isArray(g) ? g : []);
+      // API returns stages with `order` field — sort by it
+      setStages((Array.isArray(s) ? s : []).sort((a, b) => (a.order ?? 0) - (b.order ?? 0)));
+    }).catch(console.error).finally(() => setLoading(false));
+  }, []);
 
-  const byStage = stages.map(stage => ({ ...stage, guests: guests.filter(g => g.stageId === stage.id) }));
-  const unassigned = guests.filter(g => !g.stageId);
+  // API returns snake_case: stage_id
+  const byStage = stages.map(stage => ({ ...stage, guests: guests.filter(g => g.stage_id === stage.id) }));
+  const unassigned = guests.filter(g => !g.stage_id);
 
   if (loading) return (
     <div className="flex items-center justify-center h-80 bg-white dark:bg-[#0f1117]">
@@ -40,10 +40,10 @@ export default function Pipeline() {
       <div className={`border-b ${DIVIDER} bg-white dark:bg-[#0a0c12]`}>
         <div className="px-8 py-7 flex items-center justify-between gap-6">
           <div>
-            <div className="flex items-center gap-2 mb-2">
+            {/* <div className="flex items-center gap-2 mb-2">
               <GitBranch size={12} className="text-cyan-500 dark:text-cyan-400" />
               <span className="text-[10px] font-bold uppercase tracking-widest text-cyan-500 dark:text-cyan-400">CRM</span>
-            </div>
+            </div> */}
             <h1 className="text-3xl font-extrabold tracking-tight leading-none">Pipeline.</h1>
             <p className="text-sm text-black/35 dark:text-white/30 mt-2">{guests.length} guests across {stages.length} stages</p>
           </div>
@@ -70,7 +70,7 @@ export default function Pipeline() {
         {[...byStage, ...(unassigned.length > 0 ? [{ id: 'unassigned', label: 'Unassigned', guests: unassigned }] : [])].map((col) => {
           return (
             <div key={col.id} className={`flex flex-col lg:flex-row group transition-colors hover:bg-black/[0.02] dark:hover:bg-white/[0.02]`}>
-              
+
               {/* Stage Header */}
               <div className={`lg:w-72 p-6 lg:p-8 flex flex-col justify-center border-b lg:border-b-0 lg:border-r ${DIVIDER}`}>
                 <h3 className="text-xl font-extrabold tracking-tight mb-3">{col.label}</h3>
@@ -78,7 +78,7 @@ export default function Pipeline() {
                   {col.guests.length} GUEST{col.guests.length !== 1 && 'S'}
                 </span>
               </div>
-              
+
               {/* Stage Cards Grid */}
               <div className="flex-1 p-6 lg:p-8">
                 {col.guests.length === 0 ? (
@@ -94,7 +94,7 @@ export default function Pipeline() {
                           className={`block p-5 border ${DIVIDER} bg-white dark:bg-[#0a0c12] hover:border-black dark:hover:border-white transition-all group/card shadow-sm hover:shadow-md`}>
                           <div className="flex items-center gap-4">
                             <div className={`h-10 w-10 flex items-center justify-center text-[10px] font-extrabold text-black dark:text-white bg-black/5 dark:bg-white/10 uppercase group-hover/card:bg-black/10 dark:group-hover/card:bg-white/20 transition-colors shrink-0`}>
-                              {g.name.slice(0, 2)}
+                              {g.name?.slice(0, 2)}
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-bold text-black dark:text-white truncate">{g.name}</p>
@@ -116,7 +116,7 @@ export default function Pipeline() {
                   </div>
                 )}
               </div>
-              
+
             </div>
           );
         })}

@@ -27,25 +27,26 @@ export default function AdminGuests() {
   const [stages, setStages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ name: '', email: '', bio: '', stageId: '' });
+  const [form, setForm] = useState({ name: '', email: '', bio: '', stage_id: '' });
 
   function load() {
-    if (!tenant?.id) return;
-    Promise.all([getGuests(tenant.id), getPipelineStages(tenant.id)]).then(([g, s]) => {
-      setGuests(g); setStages(s.sort((a, b) => a.order - b.order));
-    }).finally(() => setLoading(false));
+    Promise.all([getGuests(), getPipelineStages()]).then(([g, s]) => {
+      setGuests(Array.isArray(g) ? g : []);
+      setStages((Array.isArray(s) ? s : []).sort((a, b) => (a.order ?? 0) - (b.order ?? 0)));
+    }).catch(console.error).finally(() => setLoading(false));
   }
-  useEffect(() => { load(); }, [tenant?.id]);
+  useEffect(() => { load(); }, []);
 
-  function openCreate() { setEditing('new'); setForm({ name: '', email: '', bio: '', stageId: stages[0]?.id ?? '' }); }
-  function openEdit(g)  { setEditing(g.id); setForm({ name: g.name, email: g.email, bio: g.bio ?? '', stageId: g.stageId ?? '' }); }
-  function cancelEdit() { setEditing(null); setForm({ name: '', email: '', bio: '', stageId: '' }); }
+  function openCreate() { setEditing('new'); setForm({ name: '', email: '', bio: '', stage_id: stages[0]?.id ?? '' }); }
+  // API returns snake_case: stage_id
+  function openEdit(g)  { setEditing(g.id); setForm({ name: g.name, email: g.email, bio: g.bio ?? '', stage_id: g.stage_id ?? '' }); }
+  function cancelEdit() { setEditing(null); setForm({ name: '', email: '', bio: '', stage_id: '' }); }
 
   async function handleSave(e) {
     e.preventDefault();
-    if (!tenant?.id) return;
-    if (editing === 'new') await createGuest(tenant.id, { name: form.name, email: form.email, bio: form.bio, stageId: form.stageId || null });
-    else await updateGuest(editing, { name: form.name, email: form.email, bio: form.bio, stageId: form.stageId || null });
+    // POST/PATCH payload uses snake_case: stage_id (per API docs)
+    if (editing === 'new') await createGuest({ name: form.name, email: form.email, bio: form.bio, stage_id: form.stage_id || null });
+    else await updateGuest(editing, { name: form.name, email: form.email, bio: form.bio, stage_id: form.stage_id || null });
     cancelEdit(); load();
   }
 
@@ -111,7 +112,7 @@ export default function AdminGuests() {
                 </div>
                 <div>
                   <label className={LABEL}>Pipeline Stage</label>
-                  <select value={form.stageId} onChange={e => setForm(f => ({ ...f, stageId: e.target.value }))} className={INPUT}>
+                  <select value={form.stage_id} onChange={e => setForm(f => ({ ...f, stage_id: e.target.value }))} className={INPUT}>
                     <option value="" className="bg-white dark:bg-black">— No Stage —</option>
                     {stages.map(s => <option key={s.id} value={s.id} className="bg-white dark:bg-black">{s.label}</option>)}
                   </select>
@@ -148,9 +149,10 @@ export default function AdminGuests() {
                         <td className={`${TD} font-bold`}>{g.name}</td>
                         <td className={TD}>{g.email || <span className="text-black/20 dark:text-white/20">—</span>}</td>
                         <td className={TD}>
-                          {stageMap[g.stageId] ? (
-                            <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${STATUS_BADGE[stageMap[g.stageId]] ?? 'bg-black/5 text-black/60 dark:bg-white/10 dark:text-white/60'}`}>
-                              {stageMap[g.stageId]}
+                          {/* API returns snake_case: stage_id */}
+                          {stageMap[g.stage_id] ? (
+                            <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${STATUS_BADGE[stageMap[g.stage_id]] ?? 'bg-black/5 text-black/60 dark:bg-white/10 dark:text-white/60'}`}>
+                              {stageMap[g.stage_id]}
                             </span>
                           ) : <span className="text-black/20 dark:text-white/20">—</span>}
                         </td>

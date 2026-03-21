@@ -14,8 +14,10 @@ const TR_ROW  = `border-b ${DIVIDER} last:border-b-0 hover:bg-black/[0.02] dark:
 const BTN_PRIMARY = 'flex items-center gap-2 border border-black dark:border-white bg-black dark:bg-white text-white dark:text-black px-5 py-2.5 text-xs font-bold hover:opacity-80 transition-opacity';
 const BTN_GHOST   = `flex items-center gap-2 border ${DIVIDER} px-5 py-2.5 text-xs font-bold text-black/60 dark:text-white/60 hover:border-black dark:hover:border-white hover:text-black dark:hover:text-white transition-all`;
 
+// API booking statuses: pending | confirmed | completed | cancelled
 const STATUS_META = {
-  scheduled: 'bg-black/5 text-black dark:bg-white/10 dark:text-white',
+  pending:   'bg-black/5 text-black dark:bg-white/10 dark:text-white',
+  confirmed: 'bg-black/5 text-black dark:bg-white/10 dark:text-white',
   completed: 'bg-black text-white dark:bg-white dark:text-black',
   cancelled: 'border border-black/20 text-black/60 dark:border-white/20 dark:text-white/60',
 };
@@ -26,25 +28,26 @@ export default function AdminBookings() {
   const [guests, setGuests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ guestId: '', scheduledAt: new Date().toISOString().slice(0, 16), durationMinutes: 60, status: 'scheduled' });
+  const [form, setForm] = useState({ guest_id: '', scheduled_at: new Date().toISOString().slice(0, 16), duration_minutes: 60, status: 'pending' });
 
   function load() {
-    if (!tenant?.id) return;
-    Promise.all([getBookings(tenant.id), getGuests(tenant.id)]).then(([b, g]) => {
-      setBookings(b); setGuests(g);
-    }).finally(() => setLoading(false));
+    Promise.all([getBookings(), getGuests()]).then(([b, g]) => {
+      setBookings(Array.isArray(b) ? b : []);
+      setGuests(Array.isArray(g) ? g : []);
+    }).catch(console.error).finally(() => setLoading(false));
   }
-  useEffect(() => { load(); }, [tenant?.id]);
+  useEffect(() => { load(); }, []);
 
-  function openCreate() { setEditing('new'); setForm({ guestId: '', scheduledAt: new Date().toISOString().slice(0, 16), durationMinutes: 60, status: 'scheduled' }); }
-  function openEdit(b)  { setEditing(b.id); setForm({ guestId: b.guestId ?? '', scheduledAt: b.scheduledAt ? new Date(b.scheduledAt).toISOString().slice(0, 16) : '', durationMinutes: b.durationMinutes ?? 60, status: b.status ?? 'scheduled' }); }
+  function openCreate() { setEditing('new'); setForm({ guest_id: '', scheduled_at: new Date().toISOString().slice(0, 16), duration_minutes: 60, status: 'pending' }); }
+  // API returns snake_case: guest_id, scheduled_at, duration_minutes
+  function openEdit(b)  { setEditing(b.id); setForm({ guest_id: b.guest_id ?? b.guest?.id ?? '', scheduled_at: b.scheduled_at ? new Date(b.scheduled_at).toISOString().slice(0, 16) : '', duration_minutes: b.duration_minutes ?? 60, status: b.status ?? 'pending' }); }
   function cancelEdit() { setEditing(null); }
 
   async function handleSave(e) {
     e.preventDefault();
-    if (!tenant?.id) return;
-    const payload = { guestId: form.guestId || null, scheduledAt: new Date(form.scheduledAt).toISOString(), durationMinutes: Number(form.durationMinutes) || 60, status: form.status };
-    if (editing === 'new') await createBooking(tenant.id, payload);
+    // POST/PATCH payload uses snake_case (per API docs): guest_id, scheduled_at, duration_minutes
+    const payload = { guest_id: form.guest_id || null, scheduled_at: new Date(form.scheduled_at).toISOString(), duration_minutes: Number(form.duration_minutes) || 60, status: form.status };
+    if (editing === 'new') await createBooking(payload);
     else await updateBooking(editing, payload);
     cancelEdit(); load();
   }
@@ -99,7 +102,7 @@ export default function AdminBookings() {
               <form onSubmit={handleSave} className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className={LABEL}>Guest</label>
-                  <select value={form.guestId} onChange={e => setForm(f => ({ ...f, guestId: e.target.value }))} className={INPUT}>
+                  <select value={form.guest_id} onChange={e => setForm(f => ({ ...f, guest_id: e.target.value }))} className={INPUT}>
                     <option value="" className="bg-white dark:bg-black">— No Guest —</option>
                     {guests.map(g => <option key={g.id} value={g.id} className="bg-white dark:bg-black">{g.name}</option>)}
                   </select>
@@ -107,18 +110,19 @@ export default function AdminBookings() {
                 <div>
                   <label className={LABEL}>Status</label>
                   <select value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))} className={INPUT}>
-                    <option value="scheduled" className="bg-white dark:bg-black">Scheduled</option>
+                    <option value="pending"   className="bg-white dark:bg-black">Pending</option>
+                    <option value="confirmed" className="bg-white dark:bg-black">Confirmed</option>
                     <option value="completed" className="bg-white dark:bg-black">Completed</option>
                     <option value="cancelled" className="bg-white dark:bg-black">Cancelled</option>
                   </select>
                 </div>
                 <div>
                   <label className={LABEL}>Scheduled At</label>
-                  <input type="datetime-local" value={form.scheduledAt} onChange={e => setForm(f => ({ ...f, scheduledAt: e.target.value }))} className={INPUT} />
+                  <input type="datetime-local" value={form.scheduled_at} onChange={e => setForm(f => ({ ...f, scheduled_at: e.target.value }))} className={INPUT} />
                 </div>
                 <div>
                   <label className={LABEL}>Duration (minutes)</label>
-                  <input type="number" min={1} value={form.durationMinutes} onChange={e => setForm(f => ({ ...f, durationMinutes: e.target.value }))} className={INPUT} placeholder="60" />
+                  <input type="number" min={1} value={form.duration_minutes} onChange={e => setForm(f => ({ ...f, duration_minutes: e.target.value }))} className={INPUT} placeholder="60" />
                 </div>
                 <div className="md:col-span-2 flex items-center justify-end gap-3 pt-4 border-t border-black/10 dark:border-white/10 mt-2">
                   <button type="button" onClick={cancelEdit} className={BTN_GHOST}>Cancel</button>
@@ -150,9 +154,10 @@ export default function AdminBookings() {
                   <tbody>
                     {bookings.map(b => (
                       <tr key={b.id} className={TR_ROW}>
-                        <td className={`${TD} font-bold`}>{guestMap[b.guestId] ?? <span className="text-black/20 dark:text-white/20">—</span>}</td>
-                        <td className={TD}>{new Date(b.scheduledAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
-                        <td className={TD}>{b.durationMinutes} min</td>
+                         {/* API returns snake_case: guest_id, scheduled_at, duration_minutes */}
+                         <td className={`${TD} font-bold`}>{b.guest?.name ?? guestMap[b.guest_id] ?? <span className="text-black/20 dark:text-white/20">—</span>}</td>
+                         <td className={TD}>{b.scheduled_at ? new Date(b.scheduled_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}</td>
+                         <td className={TD}>{b.duration_minutes ?? '—'} min</td>
                         <td className={TD}>
                           <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${STATUS_META[b.status] ?? 'bg-black/5 text-black/60 dark:bg-white/10 dark:text-white/60'}`}>
                             {b.status}

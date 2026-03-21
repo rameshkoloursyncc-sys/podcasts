@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { getEpisodeById, getGuestById } from '../../services/api';
+import { getEpisodeById } from '../../services/api';
 import { ArrowLeft, Mic2, Radio, Clock3, CheckCircle2, FileEdit, Calendar, User } from 'lucide-react';
 
 const DIVIDER = 'border-black/[0.08] dark:border-white/[0.08] divide-black/[0.08] dark:divide-white/[0.08]';
 
+// API statuses: draft | scheduled | recorded | published
 const STATUS_META = {
   draft:     { icon: FileEdit,     label: 'Draft',     badge: 'bg-black/5 text-black dark:bg-white/10 dark:text-white' },
   scheduled: { icon: Clock3,       label: 'Scheduled', badge: 'bg-black/5 text-black dark:bg-white/10 dark:text-white' },
@@ -15,15 +16,15 @@ const STATUS_META = {
 export default function EpisodeDetail() {
   const { id } = useParams();
   const [episode, setEpisode] = useState(null);
-  const [guest, setGuest] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!id) return;
-    getEpisodeById(id).then((ep) => {
-      setEpisode(ep ?? null);
-      if (ep?.guestId) return getGuestById(ep.guestId).then(setGuest);
-    }).finally(() => setLoading(false));
+    // GET /api/episodes/{id} returns episode with guest, booking, notes nested
+    getEpisodeById(id)
+      .then(ep => setEpisode(ep ?? null))
+      .catch(console.error)
+      .finally(() => setLoading(false));
   }, [id]);
 
   if (loading) return (
@@ -38,6 +39,10 @@ export default function EpisodeDetail() {
 
   const meta = STATUS_META[episode.status] ?? STATUS_META.draft;
   const Icon = meta.icon;
+
+  // API returns snake_case: guest_id, recorded_at, published_at, created_at
+  // The detail endpoint may include a nested `guest` object
+  const guest = episode.guest ?? null;
 
   return (
     <div className="bg-white dark:bg-[#0f1117] text-black dark:text-white min-h-[calc(100vh-64px)] flex flex-col">
@@ -64,7 +69,7 @@ export default function EpisodeDetail() {
           </div>
           <div className="md:text-right shrink-0">
              <p className="text-[10px] font-bold uppercase tracking-widest text-black/40 dark:text-white/30">ID</p>
-             <p className="text-[11px] font-bold mt-1 text-black/60 dark:text-white/60 tracking-widest uppercase">{episode.id.slice(0, 8)}</p>
+             <p className="text-[11px] font-bold mt-1 text-black/60 dark:text-white/60 tracking-widest uppercase">{episode.id?.slice(0, 8)}</p>
           </div>
         </div>
       </div>
@@ -77,7 +82,7 @@ export default function EpisodeDetail() {
           <div className={`p-8 hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors border-b lg:border-b-0 ${DIVIDER}`}>
             <div className="flex items-center gap-4">
               <div className="h-12 w-12 bg-black/5 dark:bg-white/10 flex items-center justify-center text-xs font-bold shrink-0">
-                {guest.name.slice(0, 2).toUpperCase()}
+                {guest.name?.slice(0, 2).toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-[9px] font-bold uppercase tracking-widest text-black/40 dark:text-white/30 mb-1">Guest</p>
@@ -99,7 +104,7 @@ export default function EpisodeDetail() {
           </div>
         )}
 
-        {/* Created */}
+        {/* Created — API: created_at */}
         <div className={`p-8 hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors border-b lg:border-b-0 ${DIVIDER}`}>
           <div className="flex items-center gap-4">
             <div className={`h-12 w-12 border ${DIVIDER} flex items-center justify-center shrink-0`}>
@@ -107,21 +112,23 @@ export default function EpisodeDetail() {
             </div>
             <div>
               <p className="text-[9px] font-bold uppercase tracking-widest text-black/40 dark:text-white/30 mb-1">Created</p>
-              <p className="text-sm font-bold text-black dark:text-white">{new Date(episode.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+              <p className="text-sm font-bold text-black dark:text-white">
+                {episode.created_at ? new Date(episode.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}
+              </p>
             </div>
           </div>
         </div>
 
-        {/* Recorded */}
+        {/* Recorded — API: recorded_at */}
         <div className={`p-8 hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors border-b md:border-b-0 ${DIVIDER}`}>
           <div className="flex items-center gap-4">
-            <div className={`h-12 w-12 ${episode.recordedAt ? 'bg-black/5 dark:bg-white/10' : 'border border-dashed ' + DIVIDER} flex items-center justify-center shrink-0`}>
-              <CheckCircle2 size={16} className={episode.recordedAt ? 'text-black/50 dark:text-white/50' : 'text-black/20 dark:text-white/20'} />
+            <div className={`h-12 w-12 ${episode.recorded_at ? 'bg-black/5 dark:bg-white/10' : 'border border-dashed ' + DIVIDER} flex items-center justify-center shrink-0`}>
+              <CheckCircle2 size={16} className={episode.recorded_at ? 'text-black/50 dark:text-white/50' : 'text-black/20 dark:text-white/20'} />
             </div>
             <div>
               <p className="text-[9px] font-bold uppercase tracking-widest text-black/40 dark:text-white/30 mb-1">Recorded</p>
-              {episode.recordedAt ? (
-                <p className="text-sm font-bold text-black dark:text-white">{new Date(episode.recordedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+              {episode.recorded_at ? (
+                <p className="text-sm font-bold text-black dark:text-white">{new Date(episode.recorded_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
               ) : (
                 <p className="text-sm font-bold text-black/30 dark:text-white/20">—</p>
               )}
@@ -129,16 +136,16 @@ export default function EpisodeDetail() {
           </div>
         </div>
 
-        {/* Published */}
+        {/* Published — API: published_at */}
         <div className="p-8 hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors">
           <div className="flex items-center gap-4">
-            <div className={`h-12 w-12 ${episode.publishedAt ? 'bg-black/5 dark:bg-white/10' : 'border border-dashed ' + DIVIDER} flex items-center justify-center shrink-0`}>
-              <Radio size={16} className={episode.publishedAt ? 'text-black/50 dark:text-white/50' : 'text-black/20 dark:text-white/20'} />
+            <div className={`h-12 w-12 ${episode.published_at ? 'bg-black/5 dark:bg-white/10' : 'border border-dashed ' + DIVIDER} flex items-center justify-center shrink-0`}>
+              <Radio size={16} className={episode.published_at ? 'text-black/50 dark:text-white/50' : 'text-black/20 dark:text-white/20'} />
             </div>
             <div>
               <p className="text-[9px] font-bold uppercase tracking-widest text-black/40 dark:text-white/30 mb-1">Published</p>
-              {episode.publishedAt ? (
-                <p className="text-sm font-bold text-black dark:text-white">{new Date(episode.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+              {episode.published_at ? (
+                <p className="text-sm font-bold text-black dark:text-white">{new Date(episode.published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
               ) : (
                 <p className="text-sm font-bold text-black/30 dark:text-white/20">—</p>
               )}
@@ -147,6 +154,25 @@ export default function EpisodeDetail() {
         </div>
 
       </div>
+
+      {/* ══ NOTES SECTION (if available) ══════════════════════════════════ */}
+      {episode.notes && episode.notes.length > 0 && (
+        <div className="flex-1">
+          <div className={`px-8 py-5 border-b ${DIVIDER}`}>
+            <h2 className="text-[11px] font-bold uppercase tracking-widest">Notes</h2>
+          </div>
+          <div className={`divide-y ${DIVIDER}`}>
+            {episode.notes.map(n => (
+              <div key={n.id} className="p-8">
+                <p className="text-sm font-bold text-black/90 dark:text-white/90 leading-relaxed">{n.body}</p>
+                <p className="text-[9px] font-bold uppercase tracking-widest text-black/40 dark:text-white/30 mt-3">
+                  {n.created_at ? new Date(n.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
     </div>
   );

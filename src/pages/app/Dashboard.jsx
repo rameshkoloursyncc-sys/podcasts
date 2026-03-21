@@ -1,5 +1,5 @@
 import { useAuth } from '../../context/AuthContext';
-import { getGuests, getEpisodes, getBookings, getNotes } from '../../services/api';
+import { getDashboard, getGuests, getBookings } from '../../services/api';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
@@ -10,10 +10,12 @@ import {
 const DIVIDER = 'border-black/[0.08] dark:border-white/[0.08] divide-black/[0.08] dark:divide-white/[0.08]';
 
 const STATUS_BADGE = {
-  draft:     'bg-black/5 text-black dark:bg-white/10 dark:text-white',
+  draft: 'bg-black/5 text-black dark:bg-white/10 dark:text-white',
   scheduled: 'bg-black/5 text-black dark:bg-white/10 dark:text-white',
-  recorded:  'bg-black/5 text-black dark:bg-white/10 dark:text-white',
+  recorded: 'bg-black/5 text-black dark:bg-white/10 dark:text-white',
   published: 'bg-black text-white dark:bg-white dark:text-black',
+  pending: 'bg-black/5 text-black dark:bg-white/10 dark:text-white',
+  confirmed: 'bg-black/5 text-black dark:bg-white/10 dark:text-white',
   completed: 'bg-black text-white dark:bg-white dark:text-black',
   cancelled: 'border border-black/20 text-black/60 dark:border-white/20 dark:text-white/60',
 };
@@ -28,7 +30,7 @@ function KpiCard({ label, value, icon: Icon, sub, to }) {
             <Icon size={16} className="text-black/50 dark:text-white/50" />
           </div>
         </div>
-        <p className="text-4xl font-extrabold text-black dark:text-white tracking-tight">{value}</p>
+        <p className="text-4xl font-extrabold text-black dark:text-white tracking-tight">{value ?? '—'}</p>
         {sub && <p className="mt-1.5 text-xs text-black/40 dark:text-white/40">{sub}</p>}
       </div>
     </Link>
@@ -58,21 +60,28 @@ function EmptyState({ text, icon = '📭' }) {
 
 export default function Dashboard() {
   const { tenant, user } = useAuth();
-  const [data, setData] = useState({ guests: [], episodes: [], bookings: [], notes: [] });
+
+  // stats from GET /api/dashboard
+  const [stats, setStats] = useState(null);
+  // recent lists from GET /api/bookings and /api/guests
+  const [recentBookings, setRecentBookings] = useState([]);
+  const [recentGuests, setRecentGuests] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!tenant?.id) return;
     Promise.all([
-      getGuests(tenant.id),
-      getEpisodes(tenant.id),
-      getBookings(tenant.id),
-      getNotes(tenant.id),
-    ]).then(([guests, episodes, bookings, notes]) => {
-      setData({ guests, episodes, bookings, notes });
-      setLoading(false);
-    });
-  }, [tenant?.id]);
+      getDashboard(),
+      getBookings({ sort_by: 'created_at', sort_dir: 'desc', per_page: 5 }),
+      getGuests({ sort_by: 'created_at', sort_dir: 'desc', per_page: 5 }),
+    ])
+      .then(([dash, bookings, guests]) => {
+        setStats(dash);
+        setRecentBookings(Array.isArray(bookings) ? bookings : []);
+        setRecentGuests(Array.isArray(guests) ? guests : []);
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
 
   if (loading) {
     return (
@@ -85,28 +94,26 @@ export default function Dashboard() {
     );
   }
 
-  const published = data.episodes.filter(e => e.status === 'published').length;
-  const scheduled = data.bookings.filter(b => b.status === 'scheduled').length;
-  const recentBookings = [...data.bookings]
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 5);
-  const guestMap = Object.fromEntries(data.guests.map(g => [g.id, g]));
-  const recentGuests = [...data.guests]
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 5);
+  // The dashboard endpoint returns a stats snapshot.
+  // Fall back to recentGuests/Bookings lengths if stats are unavailable.
+  const totalGuests = stats?.total_guests ?? stats?.guests ?? recentGuests.length;
+  const totalEpisodes = stats?.total_episodes ?? stats?.episodes ?? 0;
+  const totalBookings = stats?.total_bookings ?? stats?.bookings ?? recentBookings.length;
+  const totalNotes = stats?.total_notes ?? stats?.notes ?? 0;
+  const publishedEpisodes = stats?.published_episodes ?? 0;
+  const upcomingBookings = stats?.upcoming_bookings ?? recentBookings.filter(b => b.status === 'confirmed' || b.status === 'pending').length;
 
   return (
     <div className="bg-white dark:bg-[#0f1117] text-black dark:text-white min-h-[calc(100vh-64px)] overflow-y-auto">
-      
+
       {/* ══ BILLBOARD HEADER ══════════════════════════════════════════════════ */}
       <div className={`border-b ${DIVIDER} bg-white dark:bg-[#0a0c12]`}>
-        
+
         {/* Title + actions */}
         <div className="px-8 py-7 flex items-center justify-between gap-6">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-black/30 dark:text-white/25 flex items-center gap-1.5 mb-2">
-              <Sparkles size={11} /> Application Overview
-            </p>
             <h1 className="text-3xl font-extrabold tracking-tight leading-none">
-              Welcome back{user?.displayName ? `, ${user.displayName.split(' ')[0]}` : ''} 👋
+              Welcome back{user?.display_name || user?.displayName ? `, ${(user.display_name || user.displayName).split(' ')[0]}` : ''} 👋
             </h1>
             <p className="text-sm text-black/35 dark:text-white/30 mt-2">
               {tenant?.name} · {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
@@ -126,39 +133,40 @@ export default function Dashboard() {
 
         {/* KPI strip */}
         <div className={`grid grid-cols-2 lg:grid-cols-4 divide-x ${DIVIDER} border-t ${DIVIDER}`}>
-          <KpiCard label="Total Guests"  value={data.guests.length}   icon={Users}        to="/app/guests"   sub={`${recentGuests.length} recent`} />
-          <KpiCard label="Episodes"      value={data.episodes.length} icon={Mic2}         to="/app/episodes" sub={`${published} published`} />
-          <KpiCard label="Bookings"      value={data.bookings.length} icon={CalendarDays} to="/app/bookings" sub={`${scheduled} upcoming`} />
-          <KpiCard label="Notes"         value={data.notes.length}    icon={FileText}     to="/app/notes"    sub="across all entities" />
+          <KpiCard label="Total Guests" value={totalGuests} icon={Users} to="/app/guests" sub={`${recentGuests.length} recent`} />
+          <KpiCard label="Episodes" value={totalEpisodes} icon={Mic2} to="/app/episodes" sub={`${publishedEpisodes} published`} />
+          <KpiCard label="Bookings" value={totalBookings} icon={CalendarDays} to="/app/bookings" sub={`${upcomingBookings} upcoming`} />
+          <KpiCard label="Notes" value={totalNotes} icon={FileText} to="/app/notes" sub="across all entities" />
         </div>
       </div>
 
       {/* ══ BODY GRID ═════════════════════════════════════════════════════════ */}
       <div className={`border-b ${DIVIDER} divide-y ${DIVIDER}`}>
-        
+
         {/* Main Row */}
         <div className={`grid lg:grid-cols-3 divide-x ${DIVIDER}`}>
-          
+
           {/* Recent Bookings */}
           <div className="lg:col-span-2 flex flex-col">
-            <CellHeader title="Recent Bookings" subtitle="Latest 5 scheduled recordings"
+            <CellHeader title="Recent Bookings" subtitle="Latest scheduled recordings"
               action={<Link to="/app/bookings" className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-black/35 dark:text-white/25 hover:text-black dark:hover:text-white transition-colors">All <ArrowRight size={10} /></Link>}
             />
             <div className="flex-1">
               {recentBookings.length === 0 ? <EmptyState text="No bookings yet" icon="📅" /> : (
                 <div>
                   {recentBookings.map((b) => {
-                    const guest = guestMap[b.guestId];
-                    const initials = guest?.name?.slice(0, 2) ?? '??';
+                    // API returns snake_case: guest_id, scheduled_at, status
+                    const guestName = b.guest?.name ?? 'Unknown guest';
+                    const initials = guestName.slice(0, 2);
                     return (
                       <div key={b.id} className={`flex items-center gap-4 px-6 py-4 border-b ${DIVIDER} last:border-b-0 hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors`}>
                         <div className="h-10 w-10 flex-none bg-black/5 dark:bg-white/10 flex items-center justify-center text-[10px] uppercase font-bold text-black dark:text-white shrink-0">
                           {initials}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-bold text-black/80 dark:text-white/80 truncate">{guest?.name ?? 'Unknown guest'}</p>
+                          <p className="text-sm font-bold text-black/80 dark:text-white/80 truncate">{guestName}</p>
                           <p className="text-[11px] font-bold tracking-wide uppercase text-black/30 dark:text-white/25 flex items-center gap-1.5 mt-1">
-                            <Clock3 size={10}/> {new Date(b.scheduledAt).toLocaleString('en-US', {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}
+                            <Clock3 size={10} /> {b.scheduled_at ? new Date(b.scheduled_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}
                           </p>
                         </div>
                         <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest ${STATUS_BADGE[b.status] ?? 'bg-slate-100 text-slate-600 dark:bg-white/8 dark:text-white/40'}`}>
@@ -173,16 +181,16 @@ export default function Dashboard() {
           </div>
 
           <div className={`flex flex-col divide-y ${DIVIDER}`}>
-            
+
             {/* Quick Access */}
             <div className="flex flex-col">
               <CellHeader title="Quick Access" />
               <div>
                 {[
-                  { to: '/app/guests',   icon: Users,        label: 'Guests',   count: data.guests.length,   accent: 'text-violet-600 dark:text-violet-400' },
-                  { to: '/app/episodes', icon: Mic2,         label: 'Episodes', count: data.episodes.length, accent: 'text-blue-600 dark:text-blue-400' },
-                  { to: '/app/bookings', icon: CalendarDays, label: 'Bookings', count: data.bookings.length, accent: 'text-amber-600 dark:text-amber-400' },
-                  { to: '/app/notes',    icon: FileText,     label: 'Notes',    count: data.notes.length,    accent: 'text-emerald-600 dark:text-emerald-400' },
+                  { to: '/app/guests', icon: Users, label: 'Guests', count: totalGuests, accent: 'text-violet-600 dark:text-violet-400' },
+                  { to: '/app/episodes', icon: Mic2, label: 'Episodes', count: totalEpisodes, accent: 'text-blue-600 dark:text-blue-400' },
+                  { to: '/app/bookings', icon: CalendarDays, label: 'Bookings', count: totalBookings, accent: 'text-amber-600 dark:text-amber-400' },
+                  { to: '/app/notes', icon: FileText, label: 'Notes', count: totalNotes, accent: 'text-emerald-600 dark:text-emerald-400' },
                 ].map(({ to, icon: Icon, label, count, accent }) => (
                   <Link key={to} to={to} className={`flex items-center justify-between px-6 py-4 border-b ${DIVIDER} last:border-b-0 hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors group`}>
                     <div className="flex items-center gap-3">
@@ -190,7 +198,7 @@ export default function Dashboard() {
                       <span className="text-[11px] font-bold uppercase tracking-widest text-black/60 dark:text-white/60 group-hover:text-black dark:group-hover:text-white transition-colors">{label}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-[11px] font-bold text-black/40 dark:text-white/30 truncatetabular-nums">{count}</span>
+                      <span className="text-[11px] font-bold text-black/40 dark:text-white/30 tabular-nums">{count ?? '—'}</span>
                       <ArrowRight size={11} className="text-black/20 dark:text-white/15 group-hover:text-black dark:group-hover:text-white transition-colors" />
                     </div>
                   </Link>
@@ -206,7 +214,7 @@ export default function Dashboard() {
                   return (
                     <Link key={g.id} to={`/app/guests/${g.id}`} className={`flex items-center gap-4 px-6 py-4 border-b ${DIVIDER} last:border-b-0 hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors group`}>
                       <div className="h-8 w-8 flex-none bg-black/5 dark:bg-white/10 flex items-center justify-center text-[10px] uppercase font-bold text-black dark:text-white shrink-0 group-hover:bg-black/10 dark:group-hover:bg-white/20 transition-colors">
-                        {g.name.slice(0, 2)}
+                        {g.name?.slice(0, 2)}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-bold text-black/80 dark:text-white/80 truncate group-hover:text-black dark:group-hover:text-white">{g.name}</p>
@@ -224,16 +232,16 @@ export default function Dashboard() {
         {/* Footer info row */}
         <div className={`grid grid-cols-1 md:grid-cols-3 divide-x ${DIVIDER}`}>
           <div className="p-6 flex items-center gap-4 col-span-1 md:col-span-2">
-             <div className="h-10 w-10 border border-black/10 dark:border-white/10 flex items-center justify-center shrink-0">
-               <Activity size={16} className="text-black/40 dark:text-white/40" />
-             </div>
-             <div>
-               <p className="text-xs font-bold uppercase tracking-widest">All systems operational</p>
-               <p className="text-[10px] font-bold uppercase tracking-widest text-black/40 dark:text-white/30 mt-1.5">{data.guests.length + data.episodes.length + data.bookings.length} total records across {tenant?.name}</p>
-             </div>
+            <div className="h-10 w-10 border border-black/10 dark:border-white/10 flex items-center justify-center shrink-0">
+              <Activity size={16} className="text-black/40 dark:text-white/40" />
+            </div>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest">All systems operational</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-black/40 dark:text-white/30 mt-1.5">{(totalGuests ?? 0) + (totalEpisodes ?? 0) + (totalBookings ?? 0)} total records across {tenant?.name}</p>
+            </div>
           </div>
           <div className="p-6 flex items-center gap-3 md:justify-end border-t md:border-t-0 border-black/10 dark:border-white/10">
-            <Link to="/app/guests"   className={`border ${DIVIDER} px-4 py-2 text-[10px] font-bold uppercase tracking-widest hover:border-black dark:hover:border-white transition-colors`}>Guests</Link>
+            <Link to="/app/guests" className={`border ${DIVIDER} px-4 py-2 text-[10px] font-bold uppercase tracking-widest hover:border-black dark:hover:border-white transition-colors`}>Guests</Link>
             <Link to="/app/episodes" className={`border ${DIVIDER} px-4 py-2 text-[10px] font-bold uppercase tracking-widest hover:border-black dark:hover:border-white transition-colors`}>Episodes</Link>
           </div>
         </div>

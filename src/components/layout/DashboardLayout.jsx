@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import {
   LayoutDashboard, Users, GitBranch, Mic2, CalendarDays,
-  FileText, Settings, ShieldCheck, LogOut, Bell, Search, Sparkles, Sun, Moon,
+  FileText, Settings, ShieldCheck, LogOut, Bell, Search, Sparkles, Sun, Moon, Mail,
 } from 'lucide-react';
 
 const DIVIDER = 'border-black/[0.08] dark:border-white/[0.08] divide-black/[0.08] dark:divide-white/[0.08]';
@@ -15,6 +15,7 @@ const nav = [
   { to: '/app/episodes', end: false, label: 'Episodes', icon: Mic2, lightColor: 'text-pink-500', darkColor: 'text-pink-400', activeLight: 'bg-black/[0.4] text-black border-l-2 border-l-pink-500', activeDark: 'bg-white/[0.04] text-white border-l-2 border-l-pink-400' },
   { to: '/app/bookings', end: false, label: 'Bookings', icon: CalendarDays, lightColor: 'text-amber-500', darkColor: 'text-amber-400', activeLight: 'bg-black/[0.4] text-black border-l-2 border-l-amber-500', activeDark: 'bg-white/[0.04] text-white border-l-2 border-l-amber-400' },
   { to: '/app/notes', end: false, label: 'Notes', icon: FileText, lightColor: 'text-emerald-500', darkColor: 'text-emerald-400', activeLight: 'bg-black/[0.4] text-black border-l-2 border-l-emerald-500', activeDark: 'bg-white/[0.04] text-white border-l-2 border-l-emerald-400' },
+  { to: '/app/followups', end: false, label: 'Follow-ups', icon: Mail, lightColor: 'text-orange-500', darkColor: 'text-orange-400', activeLight: 'bg-black/[0.4] text-black border-l-2 border-l-orange-500', activeDark: 'bg-white/[0.04] text-white border-l-2 border-l-orange-400' },
   { to: '/app/settings', end: false, label: 'Settings', icon: Settings, lightColor: 'text-slate-500', darkColor: 'text-slate-400', activeLight: 'bg-black/[0.4] text-black border-l-2 border-l-black', activeDark: 'bg-white/[0.04] text-white border-l-2 border-l-white' },
 ];
 const adminNav = {
@@ -80,7 +81,7 @@ export default function DashboardLayout() {
             ))}
           </div>
 
-          <div className={`pt-4 mt-4 border-t ${DIVIDER}`}>
+          {/* <div className={`pt-4 mt-4 border-t ${DIVIDER}`}>
             <p className="px-6 mb-3 text-[10px] font-bold uppercase tracking-widest text-black/30 dark:text-white/20">Administration</p>
             <NavLink
               to={adminNav.to}
@@ -99,7 +100,7 @@ export default function DashboardLayout() {
                 </>
               )}
             </NavLink>
-          </div>
+          </div> */}
         </nav>
 
         {/* User panel */}

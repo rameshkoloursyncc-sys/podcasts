@@ -27,25 +27,26 @@ export default function AdminEpisodes() {
   const [guests, setGuests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ title: '', guestId: '', status: 'draft' });
+  const [form, setForm] = useState({ title: '', guest_id: '', status: 'draft' });
 
   function load() {
-    if (!tenant?.id) return;
-    Promise.all([getEpisodes(tenant.id), getGuests(tenant.id)]).then(([e, g]) => {
-      setEpisodes(e); setGuests(g);
-    }).finally(() => setLoading(false));
+    Promise.all([getEpisodes(), getGuests()]).then(([e, g]) => {
+      setEpisodes(Array.isArray(e) ? e : []);
+      setGuests(Array.isArray(g) ? g : []);
+    }).catch(console.error).finally(() => setLoading(false));
   }
-  useEffect(() => { load(); }, [tenant?.id]);
+  useEffect(() => { load(); }, []);
 
-  function openCreate() { setEditing('new'); setForm({ title: '', guestId: '', status: 'draft' }); }
-  function openEdit(ep)  { setEditing(ep.id); setForm({ title: ep.title, guestId: ep.guestId ?? '', status: ep.status ?? 'draft' }); }
-  function cancelEdit()  { setEditing(null); setForm({ title: '', guestId: '', status: 'draft' }); }
+  function openCreate() { setEditing('new'); setForm({ title: '', guest_id: '', status: 'draft' }); }
+  // API returns snake_case: guest_id
+  function openEdit(ep)  { setEditing(ep.id); setForm({ title: ep.title, guest_id: ep.guest_id ?? ep.guest?.id ?? '', status: ep.status ?? 'draft' }); }
+  function cancelEdit()  { setEditing(null); setForm({ title: '', guest_id: '', status: 'draft' }); }
 
   async function handleSave(e) {
     e.preventDefault();
-    if (!tenant?.id) return;
-    if (editing === 'new') await createEpisode(tenant.id, { title: form.title, guestId: form.guestId || null, status: form.status });
-    else await updateEpisode(editing, { title: form.title, guestId: form.guestId || null, status: form.status });
+    // POST/PATCH payload uses snake_case: guest_id (per API docs)
+    if (editing === 'new') await createEpisode({ title: form.title, guest_id: form.guest_id || null, status: form.status });
+    else await updateEpisode(editing, { title: form.title, guest_id: form.guest_id || null, status: form.status });
     cancelEdit(); load();
   }
 
@@ -103,7 +104,7 @@ export default function AdminEpisodes() {
                 </div>
                 <div>
                   <label className={LABEL}>Guest</label>
-                  <select value={form.guestId} onChange={e => setForm(f => ({ ...f, guestId: e.target.value }))} className={INPUT}>
+                  <select value={form.guest_id} onChange={e => setForm(f => ({ ...f, guest_id: e.target.value }))} className={INPUT}>
                     <option value="" className="bg-white dark:bg-black">— No Guest —</option>
                     {guests.map(g => <option key={g.id} value={g.id} className="bg-white dark:bg-black">{g.name}</option>)}
                   </select>
@@ -146,8 +147,9 @@ export default function AdminEpisodes() {
                   <tbody>
                     {episodes.map(ep => (
                       <tr key={ep.id} className={TR_ROW}>
-                        <td className={`${TD} font-bold`}>{ep.title}</td>
-                        <td className={TD}>{guestMap[ep.guestId] ?? <span className="text-black/20 dark:text-white/20">—</span>}</td>
+                         <td className={`${TD} font-bold`}>{ep.title}</td>
+                         {/* API returns snake_case: guest_id, or nested guest.name */}
+                         <td className={TD}>{ep.guest?.name ?? guestMap[ep.guest_id] ?? <span className="text-black/20 dark:text-white/20">—</span>}</td>
                         <td className={TD}>
                           <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${STATUS_META[ep.status] ?? 'bg-black/5 text-black/60 dark:bg-white/10 dark:text-white/60'}`}>
                             {ep.status}

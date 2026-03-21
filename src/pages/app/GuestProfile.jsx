@@ -4,6 +4,8 @@ import { useAuth } from '../../context/AuthContext';
 import { getGuestById, getPipelineStages, getNotes, createNote } from '../../services/api';
 import { ArrowLeft, Mail, Tag, FileText, Send, Clock3 } from 'lucide-react';
 
+const DIVIDER = 'border-black/[0.08] dark:border-white/[0.08] divide-black/[0.08] dark:divide-white/[0.08]';
+
 export default function GuestProfile() {
   const { id } = useParams();
   const { tenant, user } = useAuth();
@@ -15,21 +17,36 @@ export default function GuestProfile() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (!tenant?.id || !id) return;
-    Promise.all([getGuestById(id), getPipelineStages(tenant.id), getNotes(tenant.id, 'guest', id)])
-      .then(([g, s, n]) => { setGuest(g ?? null); setStages(s); setNotes(n); })
+    if (!id) return;
+    Promise.all([
+      getGuestById(id),
+      getPipelineStages(),
+      // GET /api/notes?entity_type=guest&entity_id={id}
+      getNotes('guest', id),
+    ])
+      .then(([g, s, n]) => { setGuest(g ?? null); setStages(Array.isArray(s) ? s : []); setNotes(Array.isArray(n) ? n : []); })
+      .catch(console.error)
       .finally(() => setLoading(false));
-  }, [tenant?.id, id]);
+  }, [id]);
 
   async function handleAddNote(e) {
     e.preventDefault();
-    if (!newNote.trim() || !tenant?.id || !user?.id) return;
+    if (!newNote.trim()) return;
     setSaving(true);
     try {
-      const note = await createNote(tenant.id, { entityType: 'guest', entityId: id, authorId: user.id, body: newNote.trim() });
-      setNotes(prev => [note, ...prev]);
+      // POST /api/notes  body: { entity_type, entity_id, body }
+      const note = await createNote({
+        entity_type: 'guest',
+        entity_id: id,
+        body: newNote.trim(),
+      });
+      if (note) setNotes(prev => [note, ...prev]);
       setNewNote('');
-    } finally { setSaving(false); }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSaving(false);
+    }
   }
 
   if (loading) return (
@@ -42,8 +59,8 @@ export default function GuestProfile() {
   );
   if (!guest) return <div className="p-8 text-[10px] font-bold uppercase tracking-widest text-black/40 dark:text-white/40">Guest not found.</div>;
 
-  const stage = stages.find(s => s.id === guest.stageId);
-  const stageIdx = stages.findIndex(s => s.id === guest.stageId);
+  // API returns snake_case: stage_id, created_at, avatar_url
+  const stage = stages.find(s => s.id === guest.stage_id);
 
   return (
     <div className="bg-white dark:bg-[#0f1117] text-black dark:text-white min-h-[calc(100vh-64px)] flex flex-col">
@@ -58,7 +75,7 @@ export default function GuestProfile() {
         <div className={`px-8 py-8 border-t ${DIVIDER} flex flex-col md:flex-row items-start md:items-center justify-between gap-6`}>
           <div className="flex items-start md:items-center gap-6">
             <div className="h-24 w-24 flex items-center justify-center text-3xl font-extrabold bg-black/5 dark:bg-white/10 shrink-0">
-              {guest.name.slice(0, 2).toUpperCase()}
+              {guest.name?.slice(0, 2).toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
               <h1 className="text-3xl font-extrabold tracking-tight leading-none mb-3">{guest.name}</h1>
@@ -76,7 +93,7 @@ export default function GuestProfile() {
           <div className="md:text-right shrink-0">
             <p className="text-[10px] font-bold uppercase tracking-widest text-black/40 dark:text-white/30">Added</p>
             <p className="text-sm font-bold mt-1">
-              {new Date(guest.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+              {guest.created_at ? new Date(guest.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '—'}
             </p>
           </div>
         </div>
@@ -97,6 +114,18 @@ export default function GuestProfile() {
               <p className="text-[10px] font-bold uppercase tracking-widest text-black/30 dark:text-white/30">No biography provided.</p>
             )}
           </div>
+
+          {/* Social / extra info if available */}
+          {(guest.twitter || guest.linkedin || guest.website) && (
+            <div className={`px-8 py-5 border-t ${DIVIDER}`}>
+              <h2 className="text-[11px] font-bold uppercase tracking-widest mb-4">Links</h2>
+              <div className="flex flex-wrap gap-3">
+                {guest.twitter && <a href={guest.twitter} target="_blank" rel="noreferrer" className="text-xs font-bold underline text-black/60 dark:text-white/60">Twitter</a>}
+                {guest.linkedin && <a href={guest.linkedin} target="_blank" rel="noreferrer" className="text-xs font-bold underline text-black/60 dark:text-white/60">LinkedIn</a>}
+                {guest.website && <a href={guest.website} target="_blank" rel="noreferrer" className="text-xs font-bold underline text-black/60 dark:text-white/60">Website</a>}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Notes Section */}
@@ -134,7 +163,7 @@ export default function GuestProfile() {
                     <div className="flex items-center gap-2">
                       <Clock3 size={10} className="text-black/30 dark:text-white/20" />
                       <span className="text-[9px] font-bold uppercase tracking-widest text-black/40 dark:text-white/30">
-                        {new Date(n.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        {n.created_at ? new Date(n.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}
                       </span>
                     </div>
                   </div>
